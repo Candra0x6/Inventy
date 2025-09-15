@@ -1,0 +1,324 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ================================
+// NextAuth.js Models
+// ================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// ================================
+// Core Models for Brocy Inventory Management System
+// ================================
+
+// Organization model for multi-tenant support
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  settings    Json?    // JSON for flexible organization settings
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  departments Department[]
+  users       User[]
+  items       Item[]
+  auditLogs   AuditLog[]
+
+  @@map("organizations")
+}
+
+// Department model for organizational structure
+model Department {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String   @map("organization_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users        User[]
+  items        Item[]
+
+  @@map("departments")
+}
+
+// User roles enum
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  STAFF
+  BORROWER
+}
+
+// User model with roles and reputation
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  avatar         String?
+  image          String?  // For NextAuth compatibility
+  emailVerified  DateTime? @map("email_verified")
+  password       String?  // For email/password auth
+  role           UserRole @default(BORROWER)
+  trustScore     Float    @default(100.0) @map("trust_score")
+  isActive       Boolean  @default(true) @map("is_active")
+  organizationId String?  @map("organization_id") // Made optional for OAuth users
+  departmentId   String?  @map("department_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // NextAuth Relations
+  accounts Account[]
+  sessions Session[]
+
+  // Relations
+  organization        Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department          Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  reservations        Reservation[]
+  returns             Return[]
+  reputationHistories ReputationHistory[]
+  auditLogs           AuditLog[]
+  createdItems        Item[]                @relation("ItemCreator")
+
+  @@index([organizationId])
+  @@index([departmentId])
+  @@index([role])
+  @@index([email])
+  @@index([trustScore])
+  @@map("users")
+}
+
+// Item condition enum
+enum ItemCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+// Item availability status enum
+enum ItemStatus {
+  AVAILABLE
+  RESERVED
+  BORROWED
+  MAINTENANCE
+  RETIRED
+}
+
+// Item model with categories and tracking
+model Item {
+  id             String        @id @default(cuid())
+  name           String
+  description    String?
+  category       String
+  tags           String[]      // Array of tags for flexible categorization
+  condition      ItemCondition @default(EXCELLENT)
+  status         ItemStatus    @default(AVAILABLE)
+  location       String?
+  serialNumber   String?       @unique @map("serial_number")
+  qrCode         String?       @unique @map("qr_code")
+  barcode        String?       @unique
+  images         String[]      // Array of image URLs
+  value          Float?        // Estimated value for insurance/tracking
+  organizationId String        @map("organization_id")
+  departmentId   String?       @map("department_id")
+  createdById    String        @map("created_by_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdBy    User          @relation("ItemCreator", fields: [createdById], references: [id])
+  reservations Reservation[]
+  returns      Return[]
+
+  @@index([organizationId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([category])
+  @@index([condition])
+  @@index([createdAt])
+  @@map("items")
+}
+
+// Reservation status enum
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// Reservation model for borrowing requests
+model Reservation {
+  id               String            @id @default(cuid())
+  itemId           String            @map("item_id")
+  userId           String            @map("user_id")
+  startDate        DateTime          @map("start_date")
+  endDate          DateTime          @map("end_date")
+  actualStartDate  DateTime?         @map("actual_start_date")
+  actualEndDate    DateTime?         @map("actual_end_date")
+  status           ReservationStatus @default(PENDING)
+  purpose          String?           // Why the item is needed
+  approvedById     String?           @map("approved_by_id")
+  approvedAt       DateTime?         @map("approved_at")
+  rejectionReason  String?           @map("rejection_reason")
+  pickupConfirmed  Boolean           @default(false) @map("pickup_confirmed")
+  pickupConfirmedAt DateTime?        @map("pickup_confirmed_at")
+  notes            String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  returns   Return[]
+
+  @@index([itemId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdAt])
+  @@map("reservations")
+}
+
+// Return status enum
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DAMAGED
+}
+
+// Return model for tracking item returns
+model Return {
+  id                String         @id @default(cuid())
+  reservationId     String         @map("reservation_id")
+  itemId            String         @map("item_id")
+  userId            String         @map("user_id")
+  returnDate        DateTime       @map("return_date")
+  conditionOnReturn ItemCondition  @map("condition_on_return")
+  status            ReturnStatus   @default(PENDING)
+  damageReport      String?        @map("damage_report")
+  damageImages      String[]       @map("damage_images")
+  approvedById      String?        @map("approved_by_id")
+  approvedAt        DateTime?      @map("approved_at")
+  penaltyApplied    Boolean        @default(false) @map("penalty_applied")
+  penaltyReason     String?        @map("penalty_reason")
+  penaltyAmount     Float?         @map("penalty_amount") // Trust score deduction
+  notes             String?
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  item        Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@index([itemId])
+  @@index([userId])
+  @@index([status])
+  @@index([returnDate])
+  @@map("returns")
+}
+
+// Reputation history for tracking trust score changes
+model ReputationHistory {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  change      Float    // Positive or negative change
+  reason      String   // Reason for the change
+  previousScore Float  @map("previous_score")
+  newScore    Float    @map("new_score")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("reputation_histories")
+}
+
+// Audit log for tracking all system changes
+model AuditLog {
+  id             String   @id @default(cuid())
+  action         String   // CREATE, UPDATE, DELETE, etc.
+  entityType     String   @map("entity_type") // TABLE name
+  entityId       String   @map("entity_id")
+  userId         String?  @map("user_id")
+  organizationId String   @map("organization_id")
+  changes        Json?    // JSON object with before/after values
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
