@@ -140,7 +140,7 @@ export function ItemInfo({ item, userRole }: ItemInfoProps) {
           )}
           {canEdit && (
             <Button variant="outline" asChild>
-              <Link href={`/items/${item.id}/edit`}>
+              <Link href={`/items/edit/${item.id}`}>
                 Edit Item
               </Link>
             </Button>

@@ -6,6 +6,7 @@ import { UserRole } from '@prisma/client'
 const PROTECTED_ROUTES = {
   '/dashboard': ['SUPER_ADMIN', 'MANAGER', 'STAFF', 'BORROWER'],
   '/profile': ['SUPER_ADMIN', 'MANAGER', 'STAFF', 'BORROWER'],
+  '/admin': ['SUPER_ADMIN'],
   '/users': ['SUPER_ADMIN', 'MANAGER'],
   '/items/add': ['SUPER_ADMIN', 'MANAGER', 'STAFF'],
   '/items/edit': ['SUPER_ADMIN', 'MANAGER', 'STAFF'],

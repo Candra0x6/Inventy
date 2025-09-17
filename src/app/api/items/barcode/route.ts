@@ -38,18 +38,6 @@ export async function GET(request: NextRequest) {
     const item = await prisma.item.findUnique({
       where: { barcode },
       include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        department: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         createdBy: {
           select: {
             id: true,
@@ -82,11 +70,6 @@ export async function GET(request: NextRequest) {
 
     if (!item) {
       return NextResponse.json({ error: 'Item not found with this barcode' }, { status: 404 })
-    }
-
-    // Check if user has access to this item's organization
-    if (session.user.role !== 'SUPER_ADMIN' && item.organizationId !== session.user.organizationId) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     return NextResponse.json({
@@ -139,11 +122,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    // Check permissions
-    if (session.user.role !== 'SUPER_ADMIN' && item.organizationId !== session.user.organizationId) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
-
     if (session.user.role === 'BORROWER') {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
@@ -161,7 +139,6 @@ export async function POST(request: NextRequest) {
         entityType: 'Item',
         entityId: itemId,
         userId: session.user.id,
-        organizationId: item.organizationId,
         changes: {
           field: 'barcode',
           oldValue: item.barcode,
@@ -207,11 +184,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    // Check permissions
-    if (session.user.role !== 'SUPER_ADMIN' && item.organizationId !== session.user.organizationId) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
-
     if (session.user.role === 'BORROWER') {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
@@ -229,7 +201,6 @@ export async function DELETE(request: NextRequest) {
         entityType: 'Item',
         entityId: itemId,
         userId: session.user.id,
-        organizationId: item.organizationId,
         changes: {
           field: 'barcode',
           oldValue: item.barcode,

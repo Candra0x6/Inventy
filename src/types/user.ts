@@ -1,9 +1,6 @@
-import { UserRole, User, Organization, Department } from "@prisma/client"
+import { UserRole, User } from "@prisma/client"
 
-export type UserWithDetails = User & {
-  organization?: Organization | null
-  department?: Department | null
-}
+export type UserWithDetails = User
 
 export interface UserProfile {
   id: string
@@ -14,32 +11,18 @@ export interface UserProfile {
   role: UserRole
   trustScore: number
   isActive: boolean
-  organizationId: string | null
-  departmentId: string | null
   createdAt: Date
   updatedAt: Date
-  organization?: {
-    id: string
-    name: string
-    description: string | null
-  } | null
-  department?: {
-    id: string
-    name: string
-    description: string | null
-  } | null
 }
 
 export interface UserProfileUpdate {
   name?: string
   avatar?: string
-  departmentId?: string
 }
 
 export interface AdminUserUpdate extends UserProfileUpdate {
   role?: UserRole
   isActive?: boolean
-  organizationId?: string
 }
 
 // Role-based permissions

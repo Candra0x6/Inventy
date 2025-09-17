@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ItemSearch } from '@/components/items/item-search'
 import { ItemCard } from '@/components/items/item-card'
@@ -32,10 +33,6 @@ interface ItemData {
   location: string | null
   images: string[]
   value: number | null
-  department: {
-    id: string
-    name: string
-  } | null
   createdBy: {
     id: string
     name: string | null
@@ -59,25 +56,159 @@ async function fetchItems(searchParams: SearchParams) {
     redirect('/auth/login')
   }
 
-  const params = new URLSearchParams()
-  
-  // Add all search parameters
-  Object.entries(searchParams).forEach(([key, value]) => {
-    if (value) {
-      params.set(key, value)
-    }
-  })
+  // Extract query parameters
+  const search = searchParams.search || ''
+  const category = searchParams.category || ''
+  const status = searchParams.status as ItemStatus | ''
+  const condition = searchParams.condition as ItemCondition | ''
+  const tags = searchParams.tags?.split(',').filter(Boolean) || []
+  const page = parseInt(searchParams.page || '1')
+  const limit = parseInt(searchParams.limit || '12')
+  const sortBy = searchParams.sortBy || 'createdAt'
+  const sortOrder = searchParams.sortOrder || 'desc'
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-  const response = await fetch(`${baseUrl}/api/items?${params.toString()}`, {
-    cache: 'no-store', // Ensure fresh data
-  })
+  // Build where clause
+  const where: {
+    OR?: Array<{
+      name?: { contains: string; mode: 'insensitive' }
+      description?: { contains: string; mode: 'insensitive' }
+      serialNumber?: { contains: string; mode: 'insensitive' }
+    }>
+    category?: string
+    status?: ItemStatus
+    condition?: ItemCondition
+    tags?: { hasSome: string[] }
+  } = {}
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch items')
+  // Search filter
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { serialNumber: { contains: search, mode: 'insensitive' } },
+    ]
   }
 
-  return response.json()
+  // Category filter
+  if (category) {
+    where.category = category
+  }
+
+  // Status filter
+  if (status) {
+    where.status = status
+  }
+
+  // Condition filter
+  if (condition) {
+    where.condition = condition
+  }
+
+  // Tags filter
+  if (tags.length > 0) {
+    where.tags = {
+      hasSome: tags
+    }
+  }
+
+  // Calculate pagination
+  const skip = (page - 1) * limit
+
+  // Build orderBy clause
+  const orderBy: {
+    name?: 'asc' | 'desc'
+    category?: 'asc' | 'desc'
+    createdAt?: 'asc' | 'desc'
+    updatedAt?: 'asc' | 'desc'
+  } = {}
+  if (sortBy === 'name' || sortBy === 'category' || sortBy === 'createdAt' || sortBy === 'updatedAt') {
+    orderBy[sortBy] = sortOrder as 'asc' | 'desc'
+  } else {
+    orderBy.createdAt = 'desc'
+  }
+
+  // Execute queries
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        },
+        _count: {
+          select: {
+            reservations: {
+              where: {
+                status: 'ACTIVE'
+              }
+            }
+          }
+        }
+      },
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.item.count({ where })
+  ])
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(totalCount / limit)
+  const hasNextPage = page < totalPages
+  const hasPrevPage = page > 1
+
+  // Get unique categories and tags for filter options
+  const [categories, allTags] = await Promise.all([
+    prisma.item.groupBy({
+      by: ['category'],
+      _count: {
+        category: true
+      }
+    }),
+    prisma.item.findMany({
+      select: {
+        tags: true
+      }
+    })
+  ])
+
+  // Process tags to get unique values with counts
+  const tagCounts: Record<string, number> = {}
+  allTags.forEach(item => {
+    item.tags.forEach(tag => {
+      tagCounts[tag] = (tagCounts[tag] || 0) + 1
+    })
+  })
+
+  const uniqueTags = Object.entries(tagCounts).map(([tag, count]) => ({
+    tag,
+    count
+  }))
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+    },
+    filters: {
+      categories: categories.map(c => ({
+        category: c.category,
+        count: c._count.category
+      })),
+      tags: uniqueTags,
+      statuses: Object.values(ItemStatus),
+      conditions: Object.values(ItemCondition),
+    }
+  }
 }
 
 function ItemsGridSkeleton() {

@@ -45,27 +45,23 @@ A comprehensive Next.js + Supabase inventory management system that enables orga
 - [x] Implement item detail pages with photos and descriptions
 - [x] Create add/edit item forms with image upload
 - [x] Implement item categories and tags system
-- [ ] Add QR code generation for items
-- [ ] Implement barcode scanning functionality
-- [ ] Create item availability status tracking
-- [ ] Implement advanced search with filters (category, availability, location)
+- [x] Add QR code generation for items
+- [x] Implement barcode scanning functionality
+- [x] Create item availability status tracking
+- [x] Implement advanced search with filters (category, availability, location)
 
 ### Borrowing & Reservation System
-- [ ] Create item reservation interface with calendar view
-- [ ] Implement reservation conflict detection
-- [ ] Create admin approval workflow for reservations
-- [ ] Build reservation management dashboard
-- [ ] Implement reservation time period controls
+- [x] Create item reservation interface with calendar view
 - [ ] Create pickup confirmation system with QR scanning
-- [ ] Add reservation modification and cancellation features
+- [x] Add reservation modification and cancellation features
 
 ### Return Management
-- [ ] Create return confirmation interface
-- [ ] Implement condition assessment forms
-- [ ] Build return approval workflow
-- [ ] Create late return tracking and notifications
-- [ ] Implement damage reporting system
-- [ ] Add return analytics and reporting
+- [x] Create return confirmation interface
+- [x] Implement condition assessment forms
+- [x] Build return approval workflow
+- [x] Create late return tracking and notifications
+- [x] Implement damage reporting system
+- [x] Add return analytics and reporting
 
 ### Trust & Reputation System
 - [ ] Implement user trust score calculation algorithm

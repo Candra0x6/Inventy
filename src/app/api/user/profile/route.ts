@@ -19,22 +19,6 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-        department: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
     })
 
     if (!user) {
@@ -80,22 +64,6 @@ export async function PATCH(request: NextRequest) {
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: updateData,
-      include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-        department: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
     })
 
     return NextResponse.json(updatedUser)

@@ -71,44 +71,28 @@ export async function requireUserManagement(targetUserId: string) {
   return { currentUser, targetUser }
 }
 
-// Check if user belongs to the same organization
+// Check if user belongs to the same organization (simplified for single-tenant)
 export async function requireSameOrganization(targetUserId: string) {
   const currentUser = await requireAuth()
   
-  if (!currentUser.organizationId) {
-    throw new Error('User not assigned to an organization')
-  }
-  
   const targetUser = await prisma.user.findUnique({
     where: { id: targetUserId },
-    select: { organizationId: true },
+    select: { id: true },
   })
   
   if (!targetUser) {
     throw new Error('Target user not found')
   }
   
-  if (targetUser.organizationId !== currentUser.organizationId) {
-    redirect("/unauthorized")
-  }
-  
+  // In single-tenant mode, all users belong to the same organization
   return { currentUser, targetUser }
 }
 
-// Validate organization access
+// Validate organization access (simplified for single-tenant)
 export async function requireOrganizationAccess(organizationId: string) {
   const user = await requireAuth()
   
-  // Super admins can access any organization
-  if (user.role === 'SUPER_ADMIN') {
-    return user
-  }
-  
-  // Other users can only access their own organization
-  if (user.organizationId !== organizationId) {
-    redirect("/unauthorized")
-  }
-  
+  // In single-tenant mode, all users have access
   return user
 }
 

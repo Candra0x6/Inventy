@@ -24,11 +24,8 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for filtering items
     const where: {
-      organizationId: string
       category?: string
-    } = {
-      organizationId: session.user.organizationId!,
-    }
+    } = {}
 
     if (category) {
       where.category = category
@@ -92,7 +89,6 @@ export async function GET(request: NextRequest) {
     // Get trending tags (recently created items with these tags)
     const recentItems = await prisma.item.findMany({
       where: {
-        organizationId: session.user.organizationId!,
         createdAt: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
         }
@@ -175,8 +171,7 @@ export async function POST(request: NextRequest) {
           itemIds.map(async (itemId: string) => {
             const item = await prisma.item.findFirst({
               where: {
-                id: itemId,
-                organizationId: session.user.organizationId!
+                id: itemId
               }
             })
 
@@ -214,8 +209,7 @@ export async function POST(request: NextRequest) {
           itemIds.map(async (itemId: string) => {
             const item = await prisma.item.findFirst({
               where: {
-                id: itemId,
-                organizationId: session.user.organizationId!
+                id: itemId
               }
             })
 
@@ -253,7 +247,6 @@ export async function POST(request: NextRequest) {
         // Find all items with the old tag
         const itemsWithOldTag = await prisma.item.findMany({
           where: {
-            organizationId: session.user.organizationId!,
             tags: {
               has: oldTag
             }
@@ -328,7 +321,6 @@ export async function DELETE(request: NextRequest) {
     // Find all items that have any of the tags to delete
     const itemsWithTags = await prisma.item.findMany({
       where: {
-        organizationId: session.user.organizationId!,
         tags: {
           hasSome: tagsToDelete
         }

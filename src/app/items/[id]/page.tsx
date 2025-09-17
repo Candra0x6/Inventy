@@ -30,6 +30,7 @@ async function fetchItemData(id: string) {
     notFound()
   }
 
+  console.log('Fetch item response status:', response.status)
   if (!response.ok) {
     throw new Error('Failed to fetch item data')
   }
@@ -119,6 +120,13 @@ async function ItemDetailContent({ id }: { id: string }) {
           
           {/* Quick Actions */}
           <div className="flex gap-2">
+            {item.status === 'AVAILABLE' && (
+              <Button size="sm" asChild>
+                <Link href={`/reservations?itemId=${item.id}`}>
+                  Reserve Item
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" size="sm" asChild>
               <Link href={`/items/${item.id}/qr`}>
                 View QR Code

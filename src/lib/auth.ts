@@ -33,10 +33,6 @@ export const authOptions: NextAuthOptions = {
           
           const user = await prisma.user.findUnique({
             where: { email },
-            include: {
-              organization: true,
-              department: true,
-            },
           })
 
           if (!user || !user.password) {
@@ -55,8 +51,6 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             image: user.image || user.avatar,
             role: user.role,
-            organizationId: user.organizationId || undefined,
-            departmentId: user.departmentId || undefined,
           }
         } catch (error) {
           console.error("Auth error:", error)
@@ -72,8 +66,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
-        token.organizationId = user.organizationId
-        token.departmentId = user.departmentId
       }
       return token
     },
@@ -81,8 +73,6 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.sub!
         session.user.role = token.role as "SUPER_ADMIN" | "MANAGER" | "STAFF" | "BORROWER"
-        session.user.organizationId = token.organizationId as string | undefined
-        session.user.departmentId = token.departmentId as string | undefined
       }
       return session
     },

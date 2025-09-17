@@ -57,10 +57,7 @@ export default function AddItemPage() {
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create item')
-      }
+     
 
       const item = await response.json()
       

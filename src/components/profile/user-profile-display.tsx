@@ -2,7 +2,7 @@ import { UserProfile, getRoleDisplayName, getTrustScoreColor, getTrustScoreLabel
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarDays, Mail, Shield, TrendingUp, Building, Users } from 'lucide-react'
+import { CalendarDays, Mail, Shield, TrendingUp } from 'lucide-react'
 
 interface UserProfileDisplayProps {
   user: UserProfile
@@ -46,22 +46,6 @@ export function UserProfileDisplay({ user, showSensitiveInfo = false }: UserProf
               <span className="text-muted-foreground">Email:</span>
               <span>{user.email}</span>
             </div>
-            
-            {user.organization && (
-              <div className="flex items-center space-x-2 text-sm">
-                <Building className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Organization:</span>
-                <span>{user.organization.name}</span>
-              </div>
-            )}
-            
-            {user.department && (
-              <div className="flex items-center space-x-2 text-sm">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Department:</span>
-                <span>{user.department.name}</span>
-              </div>
-            )}
             
             <div className="flex items-center space-x-2 text-sm">
               <CalendarDays className="h-4 w-4 text-muted-foreground" />

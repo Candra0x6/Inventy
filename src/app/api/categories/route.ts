@@ -21,14 +21,11 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for filtering
     const where: {
-      organizationId: string
       category?: {
         contains: string
         mode: 'insensitive'
       }
-    } = {
-      organizationId: session.user.organizationId!,
-    }
+    } = {}
 
     if (search) {
       where.category = {
@@ -61,21 +58,18 @@ export async function GET(request: NextRequest) {
         const [availableCount, borrowedCount, reservedCount] = await Promise.all([
           prisma.item.count({
             where: {
-              organizationId: session.user.organizationId!,
               category: cat.category,
               status: 'AVAILABLE'
             }
           }),
           prisma.item.count({
             where: {
-              organizationId: session.user.organizationId!,
               category: cat.category,
               status: 'BORROWED'
             }
           }),
           prisma.item.count({
             where: {
-              organizationId: session.user.organizationId!,
               category: cat.category,
               status: 'RESERVED'
             }
@@ -143,7 +137,6 @@ export async function POST(request: NextRequest) {
     // Check if category already exists
     const existingCategory = await prisma.item.findFirst({
       where: {
-        organizationId: session.user.organizationId!,
         category: name
       }
     })
@@ -165,7 +158,6 @@ export async function POST(request: NextRequest) {
       tags: ['_category_definition'],
       condition: 'EXCELLENT' as const,
       status: 'RETIRED' as const, // Mark as retired so it doesn't appear in normal listings
-      organizationId: session.user.organizationId!,
       createdById: session.user.id,
     }
 

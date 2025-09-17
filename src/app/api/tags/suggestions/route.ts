@@ -23,11 +23,8 @@ export async function GET(request: NextRequest) {
 
     // Get all items with their tags
     const where: {
-      organizationId: string
       category?: string
-    } = {
-      organizationId: session.user.organizationId!,
-    }
+    } = {}
 
     if (category && context === 'category') {
       where.category = category

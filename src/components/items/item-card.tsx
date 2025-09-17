@@ -16,10 +16,6 @@ interface ItemCardProps {
     location: string | null
     images: string[]
     value: number | null
-    department: {
-      id: string
-      name: string
-    } | null
     createdBy: {
       id: string
       name: string | null
@@ -164,14 +160,8 @@ export function ItemCard({ item }: ItemCardProps) {
             </div>
           )}
 
-          {/* Department and Value */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            {item.department && (
-              <span className="text-xs text-gray-500">
-                {item.department.name}
-              </span>
-            )}
-            
+          {/* Value */}
+          <div className="flex items-center justify-end pt-2 border-t border-gray-100">
             {item.value && (
               <span className="text-xs font-medium text-gray-700">
                 ${item.value.toLocaleString()}

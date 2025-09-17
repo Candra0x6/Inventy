@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     const categories = await prisma.item.groupBy({
       by: ['category'],
       where: {
-        organizationId: session.user.organizationId!,
         category: query ? {
           contains: query,
           mode: 'insensitive'

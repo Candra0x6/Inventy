@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { ItemCondition, ItemStatus } from '@prisma/client'
+import { generateAndUploadBarcode } from '@/lib/server-barcode-generator'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,9 +19,11 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const category = searchParams.get('category') || ''
     const status = searchParams.get('status') as ItemStatus | ''
+    const statuses = searchParams.get('statuses')?.split(',').filter(Boolean) as ItemStatus[] || []
     const condition = searchParams.get('condition') as ItemCondition | ''
     const tags = searchParams.get('tags')?.split(',').filter(Boolean) || []
-    const departmentId = searchParams.get('departmentId') || ''
+    const available = searchParams.get('available') // Filter for available items only
+    const overdue = searchParams.get('overdue') // Filter for overdue items
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
     const sortBy = searchParams.get('sortBy') || 'createdAt'
@@ -28,20 +31,22 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: {
-      organizationId?: string
       OR?: Array<{
         name?: { contains: string; mode: 'insensitive' }
         description?: { contains: string; mode: 'insensitive' }
         serialNumber?: { contains: string; mode: 'insensitive' }
       }>
       category?: string
-      status?: ItemStatus
+      status?: ItemStatus | { in: ItemStatus[] }
       condition?: ItemCondition
       tags?: { hasSome: string[] }
-      departmentId?: string
-    } = {
-      organizationId: session.user.organizationId,
-    }
+      reservations?: {
+        some: {
+          status: 'ACTIVE'
+          endDate?: { lt: Date }
+        }
+      }
+    } = {}
 
     // Search filter
     if (search) {
@@ -57,9 +62,29 @@ export async function GET(request: NextRequest) {
       where.category = category
     }
 
-    // Status filter
+    // Status filter (single or multiple)
     if (status) {
       where.status = status
+    } else if (statuses.length > 0) {
+      where.status = { in: statuses }
+    }
+
+    // Available items only filter
+    if (available === 'true') {
+      where.status = 'AVAILABLE'
+    }
+
+    // Overdue items filter
+    if (overdue === 'true') {
+      where.status = 'BORROWED'
+      where.reservations = {
+        some: {
+          status: 'ACTIVE' as const,
+          endDate: {
+            lt: new Date()
+          }
+        }
+      }
     }
 
     // Condition filter
@@ -72,11 +97,6 @@ export async function GET(request: NextRequest) {
       where.tags = {
         hasSome: tags
       }
-    }
-
-    // Department filter
-    if (departmentId) {
-      where.departmentId = departmentId
     }
 
     // Calculate pagination
@@ -100,12 +120,6 @@ export async function GET(request: NextRequest) {
       prisma.item.findMany({
         where,
         include: {
-          department: {
-            select: {
-              id: true,
-              name: true,
-            }
-          },
           createdBy: {
             select: {
               id: true,
@@ -139,17 +153,11 @@ export async function GET(request: NextRequest) {
     const [categories, allTags] = await Promise.all([
       prisma.item.groupBy({
         by: ['category'],
-        where: {
-          organizationId: session.user.organizationId,
-        },
         _count: {
           category: true
         }
       }),
       prisma.item.findMany({
-        where: {
-          organizationId: session.user.organizationId,
-        },
         select: {
           tags: true
         }
@@ -202,7 +210,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -221,10 +228,8 @@ export async function POST(request: NextRequest) {
       condition,
       location,
       serialNumber,
-      barcode,
       images,
-      value,
-      departmentId
+      value
     } = body
 
     // Validate required fields
@@ -263,20 +268,12 @@ export async function POST(request: NextRequest) {
         status: 'AVAILABLE',
         location,
         serialNumber,
-        barcode,
+        barcode: '', // Will be updated after barcode generation
         images: images || [],
         value: value ? parseFloat(value) : null,
-        organizationId: session.user.organizationId!,
-        departmentId: departmentId || session.user.departmentId,
         createdById: session.user.id,
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
         createdBy: {
           select: {
             id: true,
@@ -287,7 +284,41 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(item, { status: 201 })
+    // Generate and upload barcode automatically
+    const barcodeResult = await generateAndUploadBarcode(item.id, {
+      format: 'CODE128',
+      width: 2,
+      height: 100,
+      displayValue: true,
+      fontSize: 14,
+      background: '#ffffff',
+      lineColor: '#000000'
+    })
+
+    // Update item with barcode information if generation was successful
+    if (barcodeResult.success && barcodeResult.barcodeUrl && barcodeResult.barcodeValue) {
+      const updatedItem = await prisma.item.update({
+        where: { id: item.id },
+        data: {
+          barcode: barcodeResult.barcodeUrl,
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            }
+          }
+        }
+      })
+
+      return NextResponse.json(updatedItem, { status: 201 })
+    } else {
+      // If barcode generation failed, log the error but still return the item
+      console.error('Barcode generation failed:', barcodeResult.error)
+      return NextResponse.json(item, { status: 201 })
+    }
 
   } catch (error) {
     console.error('Error creating item:', error)

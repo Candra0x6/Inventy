@@ -33,8 +33,7 @@ export async function PATCH(request: NextRequest) {
     // Verify all items belong to the user's organization
     const items = await prisma.item.findMany({
       where: {
-        id: { in: itemIds },
-        organizationId: session.user.organizationId!
+        id: { in: itemIds }
       },
       select: {
         id: true,
@@ -68,8 +67,7 @@ export async function PATCH(request: NextRequest) {
         
         await prisma.item.updateMany({
           where: {
-            id: { in: itemIds },
-            organizationId: session.user.organizationId!
+            id: { in: itemIds }
           },
           data: { category: data.category.trim() }
         })
@@ -155,8 +153,7 @@ export async function PATCH(request: NextRequest) {
 
         await prisma.item.updateMany({
           where: {
-            id: { in: itemIds },
-            organizationId: session.user.organizationId!
+            id: { in: itemIds }
           },
           data: { tags: uniqueNewTags }
         })
@@ -188,8 +185,7 @@ export async function PATCH(request: NextRequest) {
 
         await prisma.item.updateMany({
           where: {
-            id: { in: itemIds },
-            organizationId: session.user.organizationId!
+            id: { in: itemIds }
           },
           data: { status: data.status }
         })

@@ -58,40 +58,40 @@ model VerificationToken {
 // Core Models for Brocy Inventory Management System
 // ================================
 
-// Organization model for multi-tenant support
-model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  settings    Json?    // JSON for flexible organization settings
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+// // Organization model for multi-tenant support
+// model Organization {
+//   id          String   @id @default(cuid())
+//   name        String
+//   description String?
+//   settings    Json?    // JSON for flexible organization settings
+//   createdAt   DateTime @default(now()) @map("created_at")
+//   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  departments Department[]
-  users       User[]
-  items       Item[]
-  auditLogs   AuditLog[]
+//   // Relations
+//   departments Department[]
+//   users       User[]
+//   items       Item[]
+//   auditLogs   AuditLog[]
 
-  @@map("organizations")
-}
+//   @@map("organizations")
+// }
 
-// Department model for organizational structure
-model Department {
-  id             String   @id @default(cuid())
-  name           String
-  description    String?
-  organizationId String   @map("organization_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+// // Department model for organizational structure
+// model Department {
+//   id             String   @id @default(cuid())
+//   name           String
+//   description    String?
+//   organizationId String   @map("organization_id")
+//   createdAt      DateTime @default(now()) @map("created_at")
+//   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  users        User[]
-  items        Item[]
+//   // Relations
+//   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+//   users        User[]
+//   items        Item[]
 
-  @@map("departments")
-}
+//   @@map("departments")
+// }
 
 // User roles enum
 enum UserRole {
@@ -113,8 +113,6 @@ model User {
   role           UserRole @default(BORROWER)
   trustScore     Float    @default(100.0) @map("trust_score")
   isActive       Boolean  @default(true) @map("is_active")
-  organizationId String?  @map("organization_id") // Made optional for OAuth users
-  departmentId   String?  @map("department_id")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -122,17 +120,17 @@ model User {
   accounts Account[]
   sessions Session[]
 
-  // Relations
-  organization        Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department          Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  // // Relations
+  // organization        Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // department          Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   reservations        Reservation[]
   returns             Return[]
   reputationHistories ReputationHistory[]
   auditLogs           AuditLog[]
   createdItems        Item[]                @relation("ItemCreator")
+  reportedDamageReports DamageReport[]      @relation("DamageReportReporter")
+  approvedDamageReports DamageReport[]      @relation("DamageReportApprover")
 
-  @@index([organizationId])
-  @@index([departmentId])
   @@index([role])
   @@index([email])
   @@index([trustScore])
@@ -172,21 +170,17 @@ model Item {
   barcode        String?       @unique
   images         String[]      // Array of image URLs
   value          Float?        // Estimated value for insurance/tracking
-  organizationId String        @map("organization_id")
-  departmentId   String?       @map("department_id")
   createdById    String        @map("created_by_id")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  // Relations
-  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  // // Relations
+  // organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   createdBy    User          @relation("ItemCreator", fields: [createdById], references: [id])
   reservations Reservation[]
   returns      Return[]
 
-  @@index([organizationId])
-  @@index([departmentId])
   @@index([status])
   @@index([category])
   @@index([condition])
@@ -267,9 +261,10 @@ model Return {
   updatedAt         DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  item        Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservation   Reservation    @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  item          Item           @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  damageReports DamageReport[]
 
   @@index([reservationId])
   @@index([itemId])
@@ -277,6 +272,72 @@ model Return {
   @@index([status])
   @@index([returnDate])
   @@map("returns")
+}
+
+// Damage type enum
+enum DamageType {
+  PHYSICAL
+  FUNCTIONAL
+  COSMETIC
+  MISSING_PARTS
+  OTHER
+}
+
+// Damage severity enum
+enum DamageSeverity {
+  MINOR
+  MODERATE
+  MAJOR
+  TOTAL_LOSS
+}
+
+// Damage report status enum
+enum DamageReportStatus {
+  REPORTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESOLVED
+}
+
+// Damage report model for tracking item damage
+model DamageReport {
+  id                  String              @id @default(cuid())
+  returnId            String              @map("return_id")
+  damageType          DamageType          @map("damage_type")
+  severity            DamageSeverity
+  description         String
+  damageImages        String[]            @map("damage_images")
+  estimatedRepairCost Float?              @map("estimated_repair_cost")
+  isRepairable        Boolean?            @map("is_repairable")
+  affectsUsability    Boolean             @map("affects_usability")
+  reportedByUserId    String              @map("reported_by_user_id")
+  witnessDetails      String?             @map("witness_details")
+  incidentDate        DateTime            @map("incident_date")
+  status              DamageReportStatus  @default(REPORTED)
+  adminNotes          String?             @map("admin_notes")
+  repairCost          Float?              @map("repair_cost")
+  penaltyAmount       Float?              @map("penalty_amount")
+  approvedById        String?             @map("approved_by_id")
+  approvedAt          DateTime?           @map("approved_at")
+  resolutionDate      DateTime?           @map("resolution_date")
+  resolutionNotes     String?             @map("resolution_notes")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  return          Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  reportedByUser  User   @relation("DamageReportReporter", fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  approvedByUser  User?  @relation("DamageReportApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([returnId])
+  @@index([reportedByUserId])
+  @@index([status])
+  @@index([severity])
+  @@index([damageType])
+  @@index([incidentDate])
+  @@index([createdAt])
+  @@map("damage_reports")
 }
 
 // Reputation history for tracking trust score changes
@@ -304,7 +365,6 @@ model AuditLog {
   entityType     String   @map("entity_type") // TABLE name
   entityId       String   @map("entity_id")
   userId         String?  @map("user_id")
-  organizationId String   @map("organization_id")
   changes        Json?    // JSON object with before/after values
   ipAddress      String?  @map("ip_address")
   userAgent      String?  @map("user_agent")
@@ -312,9 +372,8 @@ model AuditLog {
 
   // Relations
   user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
   @@index([entityType])
   @@index([entityId])
   @@index([userId])

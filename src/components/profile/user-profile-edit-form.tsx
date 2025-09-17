@@ -25,7 +25,6 @@ export function UserProfileEditForm({
   const [formData, setFormData] = useState<UserProfileUpdate>({
     name: user.name || '',
     avatar: user.avatar || '',
-    departmentId: user.departmentId || '',
   })
 
   const [avatarPreview, setAvatarPreview] = useState(user.avatar || user.image || '')
@@ -106,33 +105,6 @@ export function UserProfileEditForm({
                 Email cannot be changed. Contact your administrator if needed.
               </p>
             </div>
-
-            {user.organization && (
-              <div className="space-y-2">
-                <Label htmlFor="organization">Organization</Label>
-                <Input
-                  id="organization"
-                  value={user.organization.name}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-            )}
-
-            {user.department && (
-              <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Input
-                  id="department"
-                  value={user.department.name}
-                  disabled
-                  className="bg-muted"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Department changes require administrator approval.
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Action Buttons */}

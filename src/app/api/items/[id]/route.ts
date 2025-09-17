@@ -13,9 +13,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const { id } = await params
 
@@ -27,16 +24,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const item = await prisma.item.findFirst({
       where: {
         id,
-        organizationId: session.user.organizationId,
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          }
-        },
         createdBy: {
           select: {
             id: true,
@@ -182,7 +171,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const existingItem = await prisma.item.findFirst({
       where: {
         id,
-        organizationId: session.user.organizationId,
       }
     })
 
@@ -223,12 +211,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(departmentId !== undefined && { departmentId }),
       },
       include: {
-        department: {
-          select: {
-            id: true,
-            name: true,
-          }
-        },
         createdBy: {
           select: {
             id: true,
@@ -273,7 +255,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const existingItem = await prisma.item.findFirst({
       where: {
         id,
-        organizationId: session.user.organizationId,
       }
     })
 

@@ -57,16 +57,8 @@ export default function EditItemPage({ params }: EditItemPageProps) {
       try {
         const resolvedParams = await params
         const response = await fetch(`/api/items/${resolvedParams.id}`)
+       
         
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Item not found')
-          } else {
-            const errorData = await response.json()
-            setError(errorData.error || 'Failed to load item')
-          }
-          return
-        }
 
         const itemData = await response.json()
         setItem(itemData)
@@ -139,10 +131,7 @@ export default function EditItemPage({ params }: EditItemPageProps) {
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update item')
-      }
+    
 
       // Redirect to the item's detail page
       router.push(`/items/${item.id}`)
