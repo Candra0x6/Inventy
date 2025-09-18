@@ -190,7 +190,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       barcode,
       images,
       value,
-      departmentId
     } = body
 
     // Update the item
@@ -208,7 +207,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(barcode !== undefined && { barcode }),
         ...(images && { images }),
         ...(value !== undefined && { value: value ? parseFloat(value) : null }),
-        ...(departmentId !== undefined && { departmentId }),
       },
       include: {
         createdBy: {

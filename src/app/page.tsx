@@ -1,103 +1,349 @@
-import Image from "next/image";
+'use client'
+
+import { motion } from 'framer-motion'
+import { 
+  Package, 
+  Zap, 
+  Shield, 
+  BarChart3, 
+  Users, 
+  Scan,
+  ArrowRight,
+  CheckCircle,
+  Star,
+  TrendingUp,
+  Bell
+} from 'lucide-react'
+import { AnimatedCard, FeatureCard, StatsCard } from '@/components/ui/animated-card'
+import { AnimatedButton, FloatingActionButton } from '@/components/ui/animated-button'
+import { AnimatedNavbar, defaultNavItems } from '@/components/navigation/animated-navbar'
+import { 
+  fadeInUp, 
+  staggerContainer, 
+  pageTransition
+} from '@/lib/animations'
+
+const features = [
+  {
+    icon: <Package className="w-8 h-8" />,
+    title: "Smart Inventory",
+    description: "AI-powered inventory management with automated tracking and intelligent forecasting for optimal stock levels."
+  },
+  {
+    icon: <Scan className="w-8 h-8" />,
+    title: "QR & Barcode",
+    description: "Advanced scanning technology for instant item identification and seamless inventory operations."
+  },
+  {
+    icon: <Shield className="w-8 h-8" />,
+    title: "Secure Access",
+    description: "Enterprise-grade security with role-based access control and comprehensive audit trails."
+  },
+  {
+    icon: <BarChart3 className="w-8 h-8" />,
+    title: "Real-time Analytics",
+    description: "Powerful insights and reports that help you make data-driven decisions for your inventory."
+  },
+  {
+    icon: <Users className="w-8 h-8" />,
+    title: "Team Collaboration",
+    description: "Streamlined workflows for teams with notifications, assignments, and real-time updates."
+  },
+  {
+    icon: <Zap className="w-8 h-8" />,
+    title: "Lightning Fast",
+    description: "Optimized performance ensures your operations run smoothly, even with large inventories."
+  }
+]
+
+const stats = [
+  { value: "10,000+", label: "Items Managed", change: 23, trend: "up" as const },
+  { value: "99.9%", label: "Uptime", change: 0.1, trend: "up" as const },
+  { value: "500+", label: "Organizations", change: 15, trend: "up" as const },
+  { value: "4.9/5", label: "User Rating", change: 2, trend: "up" as const }
+]
+
+const testimonials = [
+  {
+    avatar: "/api/placeholder/80/80",
+    name: "Sarah Johnson",
+    role: "Operations Manager",
+    content: "Inventy transformed our inventory management. The real-time tracking and analytics have improved our efficiency by 40%."
+  },
+  {
+    avatar: "/api/placeholder/80/80", 
+    name: "Michael Chen",
+    role: "IT Director",
+    content: "The integration was seamless and the team adopted it quickly. Best inventory solution we've implemented."
+  },
+  {
+    avatar: "/api/placeholder/80/80",
+    name: "Emily Rodriguez", 
+    role: "Warehouse Supervisor",
+    content: "The barcode scanning feature alone saved us hours every day. Highly recommend for any growing business."
+  }
+]
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 max-w-5xl mx-auto">
+      {/* Navigation */}
+      
+      <motion.main
+        variants={pageTransition}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        {/* Hero Section */}
+        <section className="relative py-20 px-4 overflow-hidden">
+          <div className="container mx-auto max-w-6xl">
+            <motion.div
+              className="text-center space-y-8"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div variants={fadeInUp} className="space-y-4">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Smart Inventory
+                  <br />
+                  Management
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                  Transform your inventory operations with AI-powered insights, real-time tracking, and seamless team collaboration.
+                </p>
+              </motion.div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              <motion.div 
+                variants={fadeInUp}
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+              >
+                <AnimatedButton size="lg" className="text-lg px-8 py-4">
+                  Get Started Free
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </AnimatedButton>
+                <AnimatedButton variant="outline" size="lg" className="text-lg px-8 py-4">
+                  Watch Demo
+                </AnimatedButton>
+              </motion.div>
+
+              <motion.div 
+                variants={fadeInUp}
+                className="flex items-center justify-center space-x-8 text-sm text-muted-foreground"
+              >
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>No Credit Card Required</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>14-Day Free Trial</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>Setup in Minutes</span>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Floating Animation Elements */}
+            <motion.div
+              className="absolute top-20 left-10 w-16 h-16 bg-primary/10 rounded-full blur-xl"
+              animate={{
+                y: [-10, 10, -10],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <motion.div
+              className="absolute bottom-20 right-10 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"
+              animate={{
+                y: [-10, 10, -10],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2,
+              }}
+            />
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="container mx-auto max-w-6xl">
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              variants={staggerContainer}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              {stats.map((stat) => (
+                <motion.div key={stat.label} variants={fadeInUp}>
+                  <StatsCard
+                    value={stat.value}
+                    label={stat.label}
+                    change={stat.change}
+                    trend={stat.trend}
+                    icon={<TrendingUp className="w-6 h-6" />}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <motion.div
+              className="text-center space-y-4 mb-16"
+              variants={fadeInUp}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+                Powerful Features for
+                <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                  {" "}Modern Teams
+                </span>
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Everything you need to manage your inventory efficiently and scale your operations.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              variants={staggerContainer}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              {features.map((feature) => (
+                <motion.div key={feature.title} variants={fadeInUp}>
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-20 px-4 bg-muted/30">
+          <div className="container mx-auto max-w-6xl">
+            <motion.div
+              className="text-center space-y-4 mb-16"
+              variants={fadeInUp}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+                Loved by Teams
+                <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                  {" "}Worldwide
+                </span>
+              </h2>
+              <div className="flex items-center justify-center space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="ml-2 text-muted-foreground">4.9/5 from 500+ reviews</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              variants={staggerContainer}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              {testimonials.map((testimonial) => (
+                <motion.div key={testimonial.name} variants={fadeInUp}>
+                  <AnimatedCard className="h-full">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-muted-foreground italic">
+                        &ldquo;{testimonial.content}&rdquo;
+                      </p>
+                      <div className="flex items-center space-x-3 pt-4 border-t border-border">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Users className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </AnimatedCard>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <motion.div
+              variants={fadeInUp}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              <AnimatedCard 
+                className="text-center p-12 bg-gradient-to-br from-primary/5 to-blue-600/5 border-primary/20"
+                glass
+              >
+                <div className="space-y-6">
+                  <h2 className="text-3xl md:text-4xl font-bold">
+                    Ready to Transform Your Inventory?
+                  </h2>
+                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                    Join thousands of teams who trust Inventy to manage their inventory operations efficiently.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <AnimatedButton size="lg" className="text-lg px-8">
+                      Start Free Trial
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </AnimatedButton>
+                    <AnimatedButton variant="outline" size="lg" className="text-lg px-8">
+                      Schedule Demo
+                    </AnimatedButton>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    No credit card required • Setup in under 5 minutes
+                  </p>
+                </div>
+              </AnimatedCard>
+            </motion.div>
+          </div>
+        </section>
+      </motion.main>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton
+        icon={<Bell className="w-6 h-6" />}
+        position="bottom-right"
+      />
     </div>
-  );
+  )
 }

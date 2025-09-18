@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ItemSearch } from '@/components/items/item-search'
 import { ItemCard } from '@/components/items/item-card'
-import { Button } from '@/components/ui/button'
+import { AnimatedButton } from '@/components/ui/animated-button'
 import Link from 'next/link'
 import { ItemCondition, ItemStatus } from '@prisma/client'
 
@@ -215,13 +215,16 @@ function ItemsGridSkeleton() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {[...Array(12)].map((_, i) => (
-        <div key={i} className="h-80 bg-gray-200 rounded-lg animate-pulse" />
+        <div 
+          key={i} 
+          className="h-80 bg-muted rounded-xl animate-pulse card-shadow"
+        />
       ))}
     </div>
   )
 }
 
-function PaginationControls({ pagination, currentParams }: {
+function SimplePaginationControls({ pagination, currentParams }: {
   pagination: {
     page: number
     totalPages: number
@@ -247,29 +250,29 @@ function PaginationControls({ pagination, currentParams }: {
   const endItem = Math.min(pagination.page * pagination.limit, pagination.totalCount)
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="text-sm text-gray-700">
+    <div className="flex items-center justify-between mt-8">
+      <div className="text-sm text-muted-foreground">
         Showing {startItem} to {endItem} of {pagination.totalCount} items
       </div>
       
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         {pagination.hasPrevPage && (
           <Link href={createPageUrl(pagination.page - 1)}>
-            <Button variant="outline" size="sm">
+            <AnimatedButton variant="outline" size="sm">
               Previous
-            </Button>
+            </AnimatedButton>
           </Link>
         )}
         
-        <span className="flex items-center px-3 py-1 text-sm bg-gray-100 rounded">
+        <div className="flex items-center px-4 py-2 text-sm bg-muted rounded-xl border">
           Page {pagination.page} of {pagination.totalPages}
-        </span>
+        </div>
         
         {pagination.hasNextPage && (
           <Link href={createPageUrl(pagination.page + 1)}>
-            <Button variant="outline" size="sm">
+            <AnimatedButton variant="outline" size="sm">
               Next
-            </Button>
+            </AnimatedButton>
           </Link>
         )}
       </div>
@@ -292,15 +295,11 @@ async function ItemsContent({ searchParams }: { searchParams: SearchParams }) {
 
       {/* Results Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold">
           {pagination.totalCount} {pagination.totalCount === 1 ? 'Item' : 'Items'}
         </h2>
         
-        <Button asChild>
-          <Link href="/items/add">
-            Add Item
-          </Link>
-        </Button>
+   
       </div>
 
       {/* Items Grid */}
@@ -314,7 +313,7 @@ async function ItemsContent({ searchParams }: { searchParams: SearchParams }) {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <PaginationControls 
+            <SimplePaginationControls 
               pagination={pagination} 
               currentParams={searchParams}
             />
@@ -322,20 +321,20 @@ async function ItemsContent({ searchParams }: { searchParams: SearchParams }) {
         </>
       ) : (
         <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-4">
+          <div className="text-muted-foreground text-lg mb-4">
             No items found
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-muted-foreground mb-6">
             {Object.keys(searchParams).length > 0 
               ? 'Try adjusting your search criteria or filters'
               : 'Get started by adding your first item'
             }
           </p>
-          <Button asChild>
-            <Link href="/items/add">
+          <Link href="/items/add">
+            <AnimatedButton>
               Add First Item
-            </Link>
-          </Button>
+            </AnimatedButton>
+          </Link>
         </div>
       )}
     </div>
@@ -352,21 +351,27 @@ export default async function ItemsPage({ searchParams }: ItemsPageProps) {
   const resolvedParams = await searchParams
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Items Catalog
-        </h1>
-        <p className="text-gray-600">
-          Browse and manage your organization&apos;s inventory
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 max-w-5xl mx-auto">
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">
+                Items Catalog
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Browse and manage your organization&apos;s inventory
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Content */}
-      <Suspense fallback={<ItemsGridSkeleton />}>
-        <ItemsContent searchParams={resolvedParams} />
-      </Suspense>
+        {/* Content */}
+        <Suspense fallback={<ItemsGridSkeleton />}>
+          <ItemsContent searchParams={resolvedParams} />
+        </Suspense>
+      </div>
     </div>
   )
 }

@@ -2,11 +2,23 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
+import { AnimatedButton } from '@/components/ui/animated-button'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { z } from 'zod'
+import { 
+  Calendar, 
+  Clock, 
+  FileText, 
+  CheckCircle2, 
+  AlertTriangle,
+  User,
+  Loader2
+} from 'lucide-react'
 
 const reservationSchema = z.object({
   startDate: z.string().min(1, 'Start date is required'),
@@ -165,24 +177,42 @@ export function ReservationForm({
   const maxDate = formatDateForInput(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)) // 1 year from now
 
   return (
-    <Card className={`p-6 ${className}`}>
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold">Reserve Item</h3>
-          <p className="text-sm text-gray-600 mt-1">
+    <AnimatedCard className={`p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg ${className}`}>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-8"
+      >
+        {/* Header */}
+        <motion.div variants={fadeInUp}>
+          <h3 className="text-2xl font-semibold mb-2 flex items-center gap-3">
+            <Calendar className="h-6 w-6 text-primary" />
+            Reserve Item
+          </h3>
+          <p className="text-muted-foreground">
             Request to borrow &quot;{itemName}&quot;
           </p>
-        </div>
+        </motion.div>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="startDate">Start Date</Label>
+        <motion.form 
+          variants={fadeInUp}
+          onSubmit={handleSubmit(handleFormSubmit)} 
+          className="space-y-6"
+        >
+          {/* Date Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div variants={fadeInUp}>
+              <Label htmlFor="startDate" className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+                <Calendar className="h-4 w-4" />
+                Start Date
+              </Label>
               <Input
                 id="startDate"
                 type="date"
                 min={today}
                 max={maxDate}
+                className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
                 {...register('startDate')}
                 onChange={(e) => {
                   register('startDate').onChange(e)
@@ -190,19 +220,28 @@ export function ReservationForm({
                 }}
               />
               {errors.startDate && (
-                <p className="text-sm text-red-600 mt-1">
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-destructive mt-2 flex items-center gap-2"
+                >
+                  <AlertTriangle className="h-3 w-3" />
                   {errors.startDate.message}
-                </p>
+                </motion.p>
               )}
-            </div>
+            </motion.div>
 
-            <div>
-              <Label htmlFor="endDate">End Date</Label>
+            <motion.div variants={fadeInUp}>
+              <Label htmlFor="endDate" className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+                <Clock className="h-4 w-4" />
+                End Date
+              </Label>
               <Input
                 id="endDate"
                 type="date"
                 min={startDate || today}
                 max={maxDate}
+                className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
                 {...register('endDate')}
                 onChange={(e) => {
                   register('endDate').onChange(e)
@@ -210,61 +249,91 @@ export function ReservationForm({
                 }}
               />
               {errors.endDate && (
-                <p className="text-sm text-red-600 mt-1">
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-destructive mt-2 flex items-center gap-2"
+                >
+                  <AlertTriangle className="h-3 w-3" />
                   {errors.endDate.message}
-                </p>
+                </motion.p>
               )}
-            </div>
+            </motion.div>
           </div>
 
-          <div>
-            <Label htmlFor="purpose">Purpose (Optional)</Label>
+          {/* Purpose and Notes */}
+          <motion.div variants={fadeInUp}>
+            <Label htmlFor="purpose" className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+              <FileText className="h-4 w-4" />
+              Purpose (Optional)
+            </Label>
             <Input
               id="purpose"
               placeholder="What will you use this item for?"
+              className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
               {...register('purpose')}
             />
-          </div>
+          </motion.div>
 
-          <div>
-            <Label htmlFor="notes">Additional Notes (Optional)</Label>
+          <motion.div variants={fadeInUp}>
+            <Label htmlFor="notes" className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+              <FileText className="h-4 w-4" />
+              Additional Notes (Optional)
+            </Label>
             <textarea
               id="notes"
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              rows={4}
+              className="w-full px-4 py-3 bg-background/50 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 resize-none transition-all duration-200"
               placeholder="Any additional information..."
               {...register('notes')}
             />
-          </div>
+          </motion.div>
 
           {/* Availability Check Button */}
           {startDate && endDate && (
-            <div className="flex justify-center">
-              <Button
+            <motion.div variants={fadeInUp} className="flex justify-center">
+              <AnimatedButton
                 type="button"
                 variant="outline"
                 onClick={checkAvailability}
                 disabled={checkingAvailability}
                 className="w-full md:w-auto"
               >
-                {checkingAvailability ? 'Checking...' : 'Check Availability'}
-              </Button>
-            </div>
+                {checkingAvailability ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Check Availability
+                  </>
+                )}
+              </AnimatedButton>
+            </motion.div>
           )}
 
           {/* Availability Results */}
           {availabilityCheck && (
-            <div className={`p-4 rounded-lg ${
-              availabilityCheck.available 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-red-50 border border-red-200'
-            }`}>
-              <div className="flex items-center">
-                <div className={`w-3 h-3 rounded-full mr-2 ${
-                  availabilityCheck.available ? 'bg-green-500' : 'bg-red-500'
+            <motion.div 
+              variants={fadeInUp}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`p-6 rounded-xl border ${
+                availabilityCheck.available 
+                  ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950 dark:border-emerald-800' 
+                  : 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded-full ${
+                  availabilityCheck.available ? 'bg-emerald-500' : 'bg-red-500'
                 }`} />
                 <p className={`font-medium ${
-                  availabilityCheck.available ? 'text-green-800' : 'text-red-800'
+                  availabilityCheck.available 
+                    ? 'text-emerald-800 dark:text-emerald-300' 
+                    : 'text-red-800 dark:text-red-300'
                 }`}>
                   {availabilityCheck.available 
                     ? 'Item is available for selected dates' 
@@ -274,24 +343,39 @@ export function ReservationForm({
               </div>
               
               {!availabilityCheck.available && availabilityCheck.reservations && availabilityCheck.reservations.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm text-red-700 font-medium mb-2">Conflicting reservations:</p>
-                  <div className="space-y-1">
+                <div className="mt-4">
+                  <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Conflicting reservations:
+                  </p>
+                  <div className="space-y-2">
                     {availabilityCheck.reservations.map((reservation) => (
-                      <div key={reservation.id} className="text-sm text-red-600">
-                        {new Date(reservation.startDate).toLocaleDateString()} - {' '}
-                        {new Date(reservation.endDate).toLocaleDateString()} by {reservation.user.name}
+                      <div key={reservation.id} className="flex items-center gap-3 p-3 bg-background/50 rounded-lg border border-border/30">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-foreground">
+                            {reservation.user.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(reservation.startDate).toLocaleDateString()} - {' '}
+                            {new Date(reservation.endDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {reservation.status}
+                        </Badge>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          {/* Action Buttons */}
+          <motion.div variants={fadeInUp} className="flex gap-4 pt-6">
             {onCancel && (
-              <Button
+              <AnimatedButton
                 type="button"
                 variant="outline"
                 onClick={onCancel}
@@ -299,18 +383,19 @@ export function ReservationForm({
                 className="flex-1"
               >
                 Cancel
-              </Button>
+              </AnimatedButton>
             )}
-            <Button
+            <AnimatedButton
               type="submit"
               disabled={isSubmitting || (availabilityCheck !== null && !availabilityCheck.available)}
               className="flex-1"
+              loading={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Reservation'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Card>
+              Submit Reservation
+            </AnimatedButton>
+          </motion.div>
+        </motion.form>
+      </motion.div>
+    </AnimatedCard>
   )
 }

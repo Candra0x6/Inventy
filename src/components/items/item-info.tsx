@@ -1,8 +1,30 @@
+'use client'
+
 import { ItemCondition, ItemStatus } from '@prisma/client'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedButton } from '@/components/ui/animated-button'
+import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer } from '@/lib/animations'
 import Link from 'next/link'
+import { 
+  Edit3, 
+  MapPin, 
+  Calendar, 
+  DollarSign, 
+  Hash, 
+  Barcode, 
+  Building2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Package,
+  Settings,
+  User,
+  Tag,
+  BarChart3
+} from 'lucide-react'
 
 interface ItemInfoProps {
   item: {
@@ -61,34 +83,34 @@ interface ItemInfoProps {
 function getConditionColor(condition: ItemCondition): string {
   switch (condition) {
     case 'EXCELLENT':
-      return 'bg-green-50 text-green-700 border-green-200'
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
     case 'GOOD':
-      return 'bg-blue-50 text-blue-700 border-blue-200'
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
     case 'FAIR':
-      return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
     case 'POOR':
-      return 'bg-orange-50 text-orange-700 border-orange-200'
+      return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800'
     case 'DAMAGED':
-      return 'bg-red-50 text-red-700 border-red-200'
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800'
     default:
-      return 'bg-gray-50 text-gray-700 border-gray-200'
+      return 'bg-muted text-muted-foreground border-muted'
   }
 }
 
 function getStatusColor(status: ItemStatus): string {
   switch (status) {
     case 'AVAILABLE':
-      return 'bg-green-100 text-green-800 border-green-200'
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
     case 'RESERVED':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
     case 'BORROWED':
-      return 'bg-blue-100 text-blue-800 border-blue-200'
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
     case 'MAINTENANCE':
-      return 'bg-orange-100 text-orange-800 border-orange-200'
+      return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800'
     case 'RETIRED':
-      return 'bg-gray-100 text-gray-800 border-gray-200'
+      return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:border-slate-800'
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200'
+      return 'bg-muted text-muted-foreground border-muted'
   }
 }
 
@@ -107,225 +129,272 @@ export function ItemInfo({ item, userRole }: ItemInfoProps) {
   const canReserve = item.availability.isAvailable && ['BORROWER', 'STAFF'].includes(userRole)
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      className="space-y-8"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header Section */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">{item.name}</h1>
-          <div className="flex items-center gap-2">
+      <motion.div variants={fadeInUp} className="flex items-start justify-between">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+            {item.name}
+          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
             <Badge 
               variant="outline"
-              className={getStatusColor(item.status)}
+              className={`${getStatusColor(item.status)} font-medium shadow-sm`}
             >
-              {item.status.toLowerCase().replace('_', ' ')}
+              <div className="flex items-center gap-2">
+                {item.status === 'AVAILABLE' ? (
+                  <CheckCircle2 className="h-3 w-3" />
+                ) : item.status === 'BORROWED' ? (
+                  <Clock className="h-3 w-3" />
+                ) : (
+                  <AlertTriangle className="h-3 w-3" />
+                )}
+                {item.status.toLowerCase().replace('_', ' ')}
+              </div>
             </Badge>
             <Badge 
               variant="outline"
-              className={getConditionColor(item.condition)}
+              className={`${getConditionColor(item.condition)} font-medium shadow-sm`}
             >
               {item.condition.toLowerCase()}
             </Badge>
-            <span className="text-sm text-gray-500 capitalize">
+            <span className="text-sm text-muted-foreground capitalize bg-muted/50 px-3 py-1 rounded-xl">
               {item.category}
             </span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <motion.div 
+          className="flex gap-3"
+          variants={fadeInUp}
+        >
           {canReserve && (
-            <Button>
+            <AnimatedButton>
               Reserve Item
-            </Button>
+            </AnimatedButton>
           )}
           {canEdit && (
-            <Button variant="outline" asChild>
+            <AnimatedButton variant="outline" asChild>
               <Link href={`/items/edit/${item.id}`}>
+                <Edit3 className="h-4 w-4 mr-2" />
                 Edit Item
               </Link>
-            </Button>
+            </AnimatedButton>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Availability Info */}
       {!item.availability.isAvailable && (
-        <Card className="p-4 bg-yellow-50 border-yellow-200">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded-full bg-yellow-400 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-yellow-800">Currently Unavailable</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                {item.availability.activeReservations > 0 && (
-                  <>This item is currently borrowed. </>
-                )}
-                {item.availability.nextAvailableDate && (
-                  <>Expected to be available on {formatDate(item.availability.nextAvailableDate)}.</>
-                )}
-                {item.availability.pendingReservations > 0 && (
-                  <> {item.availability.pendingReservations} pending reservation(s).</>
-                )}
-              </p>
+        <motion.div variants={fadeInUp}>
+          <AnimatedCard className="p-6 bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-950/50 dark:to-orange-950/50 border-amber-200/50 dark:border-amber-800/50 backdrop-blur-sm shadow-lg">
+            <div className="flex items-start gap-4">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center shadow-sm mt-0.5">
+                <Clock className="h-3 w-3 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 dark:text-amber-200 text-lg">Currently Unavailable</h3>
+                <p className="text-amber-800 dark:text-amber-300 mt-2 leading-relaxed">
+                  {item.availability.activeReservations > 0 && (
+                    <>This item is currently borrowed. </>
+                  )}
+                  {item.availability.nextAvailableDate && (
+                    <>Expected to be available on {formatDate(item.availability.nextAvailableDate)}. </>
+                  )}
+                  {item.availability.pendingReservations > 0 && (
+                    <>{item.availability.pendingReservations} pending reservation(s). </>
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </AnimatedCard>
+        </motion.div>
       )}
 
       {/* Description */}
       {item.description && (
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
-          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {item.description}
-          </p>
-        </Card>
+        <motion.div variants={fadeInUp}>
+          <AnimatedCard className="p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+              <FileText className="h-6 w-6 text-primary" />
+              Description
+            </h2>
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap bg-muted/30 p-6 rounded-xl border border-border/30">
+              {item.description}
+            </p>
+          </AnimatedCard>
+        </motion.div>
       )}
 
       {/* Item Details */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Item Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <div>
-              <span className="text-sm font-medium text-gray-500">Category</span>
-              <p className="text-gray-900 capitalize">{item.category}</p>
+      <motion.div variants={fadeInUp}>
+        <AnimatedCard className="p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <Package className="h-6 w-6 text-primary" />
+            Item Details
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Tag className="h-4 w-4" />
+                  Category
+                </div>
+                <p className="text-foreground capitalize font-medium">{item.category}</p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                  Condition
+                </div>
+                <p className="text-foreground capitalize font-medium">{item.condition.toLowerCase()}</p>
+              </div>
+             
+            
             </div>
-            <div>
-              <span className="text-sm font-medium text-gray-500">Condition</span>
-              <p className="text-gray-900 capitalize">{item.condition.toLowerCase()}</p>
-            </div>
-            {item.location && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Location</span>
-                <p className="text-gray-900">{item.location}</p>
+            <div className="space-y-6">
+           {item.location && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                  </div>
+                  <p className="text-foreground font-medium">{item.location}</p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  Added
+                </div>
+                <p className="text-foreground font-medium">{formatDate(item.createdAt)}</p>
               </div>
-            )}
-            {item.value && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Estimated Value</span>
-                <p className="text-gray-900">${item.value.toLocaleString()}</p>
-              </div>
-            )}
-          </div>
-          <div className="space-y-3">
-            {item.serialNumber && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Serial Number</span>
-                <p className="text-gray-900 font-mono">{item.serialNumber}</p>
-              </div>
-            )}
-            {item.barcode && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Barcode</span>
-                <p className="text-gray-900 font-mono">{item.barcode}</p>
-              </div>
-            )}
-            {item.department && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Department</span>
-                <p className="text-gray-900">{item.department.name}</p>
-              </div>
-            )}
-            <div>
-              <span className="text-sm font-medium text-gray-500">Added</span>
-              <p className="text-gray-900">{formatDate(item.createdAt)}</p>
             </div>
           </div>
-        </div>
 
-        {/* Tags */}
-        {item.tags.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <span className="text-sm font-medium text-gray-500 block mb-2">Tags</span>
-            <div className="flex flex-wrap gap-2">
-              {item.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+          {/* Tags */}
+          {item.tags.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-border/30">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
+                <Tag className="h-4 w-4" />
+                Tags
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {item.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </Card>
+          )}
+        </AnimatedCard>
+      </motion.div>
 
       {/* Statistics */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Usage Statistics</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {item.statistics.totalReservations}
+      <motion.div variants={fadeInUp}>
+        <AnimatedCard className="p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <BarChart3 className="h-6 w-6 text-primary" />
+            Usage Statistics
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
+                {item.statistics.totalReservations}
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 font-medium">Total Reservations</div>
             </div>
-            <div className="text-sm text-gray-500">Total Reservations</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {item.statistics.completedReservations}
+            <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+              <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 dark:from-green-400 dark:to-green-600 bg-clip-text text-transparent">
+                {item.statistics.completedReservations}
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 font-medium">Completed</div>
             </div>
-            <div className="text-sm text-gray-500">Completed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {item.statistics.totalReturns}
+            <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 dark:from-purple-400 dark:to-purple-600 bg-clip-text text-transparent">
+                {item.statistics.totalReturns}
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 font-medium">Returns</div>
             </div>
-            <div className="text-sm text-gray-500">Returns</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {item.statistics.averageRating ? item.statistics.averageRating.toFixed(1) : 'N/A'}
-            </div>
-            <div className="text-sm text-gray-500">Avg Rating</div>
-          </div>
-        </div>
-      </Card>
+        </AnimatedCard>
+      </motion.div>
 
       {/* Recent Activity */}
       {item.recentActivity.length > 0 && (
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-          <div className="space-y-3">
-            {item.recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  activity.type === 'reservation' ? 'bg-blue-400' : 'bg-green-400'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.user.name || activity.user.email}
+        <motion.div variants={fadeInUp}>
+          <AnimatedCard className="p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+              <Clock className="h-6 w-6 text-primary" />
+              Recent Activity
+            </h2>
+            <div className="space-y-4">
+              {item.recentActivity.map((activity, index) => (
+                <motion.div 
+                  key={index} 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl border border-border/30 hover:bg-muted/40 transition-colors"
+                >
+                  <div className={`w-3 h-3 rounded-full mt-2 ${
+                    activity.type === 'reservation' 
+                      ? 'bg-gradient-to-r from-blue-400 to-blue-600' 
+                      : 'bg-gradient-to-r from-green-400 to-green-600'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-foreground">
+                        {activity.user.name || activity.user.email}
+                      </p>
+                      <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                        {formatDate(activity.date)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground capitalize mt-1">
+                      {activity.details}
                     </p>
-                    <span className="text-xs text-gray-500">
-                      {formatDate(activity.date)}
-                    </span>
                   </div>
-                  <p className="text-sm text-gray-600 capitalize">
-                    {activity.details}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+                </motion.div>
+              ))}
+            </div>
+          </AnimatedCard>
+        </motion.div>
       )}
 
       {/* Creator Info */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Item Information</h2>
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div>
-            <span>Added by: </span>
-            <span className="font-medium">
-              {item.createdBy.name || item.createdBy.email}
-            </span>
-            <span className="ml-2 px-2 py-1 bg-gray-100 rounded text-xs">
-              {item.createdBy.role.toLowerCase().replace('_', ' ')}
-            </span>
+      <motion.div variants={fadeInUp}>
+        <AnimatedCard className="p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <User className="h-6 w-6 text-primary" />
+            Item Information
+          </h2>
+          <div className="flex flex-col items-start justify-start">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Added by:</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-foreground">
+                  {item.createdBy.name || item.createdBy.email}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Last updated: {formatDate(item.updatedAt)}</span>
+            </div>
           </div>
-          <div>
-            Last updated: {formatDate(item.updatedAt)}
-          </div>
-        </div>
-      </Card>
-    </div>
+        </AnimatedCard>
+      </motion.div>
+    </motion.div>
   )
 }
