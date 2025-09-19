@@ -26,7 +26,7 @@ export function ThemeToggle() {
   ]
 
   return (
-    <div className="flex items-center space-x-1 p-1 bg-muted rounded-xl">
+    <div className="flex items-center space-x-1 p-1 bg-muted rounded-xl h-fit">
       {themes.map(({ value, icon: Icon, label }) => (
         <motion.button
           key={value}

@@ -1,22 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
+import { AnimatedButton } from '@/components/ui/animated-button'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { 
-  Clock, 
-  AlertTriangle, 
-  Mail, 
-  Bell,
+import { fadeInUp, staggerContainer } from '@/lib/animations'
+import {
+  Clock,
+  AlertTriangle,
   User,
-  Calendar,
-  TrendingUp,
-  Send,
-  CheckSquare,
+  RefreshCw,
   Filter,
-  RefreshCw
+  CheckSquare,
+  Bell,
+  Mail,
+  Send,
+  TrendingUp,
+  Settings,
+  XCircle,
+  Calendar
 } from 'lucide-react'
 
 interface OverdueReservation {
@@ -60,11 +66,8 @@ interface OverdueAnalytics {
   }[]
 }
 
-interface LateReturnTrackingProps {
-  onClose: () => void
-}
 
-export default function LateReturnTracking({ onClose }: LateReturnTrackingProps) {
+export default function LateReturnTracking() {
   const [loading, setLoading] = useState(true)
   const [overdueReservations, setOverdueReservations] = useState<OverdueReservation[]>([])
   const [analytics, setAnalytics] = useState<OverdueAnalytics | null>(null)
@@ -199,74 +202,108 @@ export default function LateReturnTracking({ onClose }: LateReturnTrackingProps)
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
+      <motion.div 
+        className="p-6"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+          <motion.div
+            variants={staggerContainer}
+            className="p-6 space-y-6"
+          >
+            <motion.div variants={fadeInUp} className="h-8 bg-muted/30 rounded-xl w-1/3 animate-pulse" />
+            <motion.div variants={fadeInUp} className="h-32 bg-muted/30 rounded-xl animate-pulse" />
+            <motion.div variants={fadeInUp} className="h-64 bg-muted/30 rounded-xl animate-pulse" />
+          </motion.div>
+        </AnimatedCard>
+      </motion.div>
     )
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Late Return Tracking & Notifications</h1>
-        <div className="flex gap-2">
-          <Button onClick={fetchOverdueData} variant="outline" disabled={loading}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-        </div>
-      </div>
+    <motion.div 
+      className="max-w-7xl mx-auto p-6 space-y-6"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+        <motion.div variants={fadeInUp} className="p-6 border-b border-border/50">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-gradient-to-br from-orange-500/20 to-orange-400/10 backdrop-blur-sm rounded-xl border border-orange-500/20">
+                <Settings className="h-6 w-6 text-orange-500" />
+              </div>
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Late Return Tracking & Notifications
+                </h1>
+                <p className="text-muted-foreground">
+                  Monitor overdue items and send automated notifications
+                </p>
+              </div>
+            </div>
+           
+          </div>
+        </motion.div>
+      </AnimatedCard>
 
-      {/* Analytics Overview */}
+      {/* Enhanced Analytics Overview */}
       {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-blue-500" />
+        <motion.div 
+          variants={fadeInUp}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          <AnimatedCard className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 border border-blue-200/50 dark:border-blue-700/50">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Total Overdue</p>
-                <p className="text-2xl font-bold">{analytics.totalOverdue}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Overdue</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.totalOverdue}</p>
               </div>
             </div>
-          </Card>
+          </AnimatedCard>
           
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="w-8 h-8 text-orange-500" />
+          <AnimatedCard className="p-6 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10 border border-red-200/50 dark:border-red-700/50">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+                <AlertTriangle className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Critical Items</p>
-                <p className="text-2xl font-bold text-red-600">{analytics.bySeverity.critical}</p>
+                <p className="text-sm font-medium text-muted-foreground">Critical Items</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.bySeverity.critical}</p>
               </div>
             </div>
-          </Card>
+          </AnimatedCard>
           
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="w-8 h-8 text-red-500" />
+          <AnimatedCard className="p-6 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 border border-purple-200/50 dark:border-purple-700/50">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Avg Days Overdue</p>
-                <p className="text-2xl font-bold">{analytics.averageDaysOverdue.toFixed(1)}</p>
+                <p className="text-sm font-medium text-muted-foreground">Avg Days Overdue</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analytics.averageDaysOverdue.toFixed(1)}</p>
               </div>
             </div>
-          </Card>
+          </AnimatedCard>
           
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <User className="w-8 h-8 text-purple-500" />
+          <AnimatedCard className="p-6 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 border border-green-200/50 dark:border-green-700/50">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+                <User className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Affected Users</p>
-                <p className="text-2xl font-bold">{analytics.affectedUsers}</p>
+                <p className="text-sm font-medium text-muted-foreground">Affected Users</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.affectedUsers}</p>
               </div>
             </div>
-          </Card>
-        </div>
+          </AnimatedCard>
+        </motion.div>
       )}
 
       {/* Severity Filter */}
@@ -313,48 +350,61 @@ export default function LateReturnTracking({ onClose }: LateReturnTrackingProps)
         </div>
       </Card>
 
-      {/* Notification Actions */}
+      {/* Enhanced Notification Actions */}
       {selectedItems.size > 0 && (
-        <Card className="p-4 bg-blue-50 border-blue-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-blue-800">
-                Send notifications to {selectedItems.size} borrower(s)
-              </span>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <AnimatedCard className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur-sm border border-primary/20 shadow-lg">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Bell className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">
+                    Send notifications to {selectedItems.size} borrower(s)
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Choose the appropriate notification type based on overdue severity
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-3">
+                <AnimatedButton
+                  onClick={() => sendNotifications('REMINDER')}
+                  disabled={notificationLoading}
+                  size="sm"
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Send Reminder
+                </AnimatedButton>
+                <AnimatedButton
+                  onClick={() => sendNotifications('WARNING')}
+                  disabled={notificationLoading}
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Send Warning
+                </AnimatedButton>
+                <AnimatedButton
+                  onClick={() => sendNotifications('FINAL_NOTICE')}
+                  disabled={notificationLoading}
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Final Notice
+                </AnimatedButton>
+              </div>
             </div>
-            
-            <div className="flex gap-2">
-              <Button
-                onClick={() => sendNotifications('REMINDER')}
-                disabled={notificationLoading}
-                size="sm"
-                className="bg-yellow-600 hover:bg-yellow-700"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Send Reminder
-              </Button>
-              <Button
-                onClick={() => sendNotifications('WARNING')}
-                disabled={notificationLoading}
-                size="sm"
-                className="bg-orange-600 hover:bg-orange-700"
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Send Warning
-              </Button>
-              <Button
-                onClick={() => sendNotifications('FINAL_NOTICE')}
-                disabled={notificationLoading}
-                size="sm"
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Final Notice
-              </Button>
-            </div>
-          </div>
-        </Card>
+          </AnimatedCard>
+        </motion.div>
       )}
 
       {/* Overdue Items List */}
@@ -462,6 +512,6 @@ export default function LateReturnTracking({ onClose }: LateReturnTrackingProps)
           </div>
         </Card>
       )}
-    </div>
+    </motion.div>
   )
 }

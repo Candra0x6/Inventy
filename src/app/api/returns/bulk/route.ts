@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function approveMultipleReturns(request: NextRequest, session: any) {
+async function approveMultipleReturns(request: NextRequest, session: Session) {
   const body = await request.json()
   const validatedData = bulkApproveSchema.parse(body)
 
@@ -204,7 +204,7 @@ async function approveMultipleReturns(request: NextRequest, session: any) {
   })
 }
 
-async function rejectMultipleReturns(request: NextRequest, session: any) {
+async function rejectMultipleReturns(request: NextRequest, session: Session) {
   const body = await request.json()
   const validatedData = bulkRejectSchema.parse(body)
 
@@ -297,7 +297,7 @@ async function rejectMultipleReturns(request: NextRequest, session: any) {
   })
 }
 
-async function processOverdueItems(request: NextRequest, session: any) {
+async function processOverdueItems(request: NextRequest, session: Session) {
   const body = await request.json()
   const validatedData = overdueProcessingSchema.parse(body)
 
@@ -419,7 +419,7 @@ async function processOverdueItems(request: NextRequest, session: any) {
   })
 }
 
-async function generateReturnReport(request: NextRequest, session: any) {
+async function generateReturnReport(request: NextRequest, session: Session) {
   const url = new URL(request.url)
   const days = parseInt(url.searchParams.get('days') || '30')
   const includeDetails = url.searchParams.get('details') === 'true'

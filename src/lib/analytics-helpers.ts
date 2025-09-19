@@ -237,7 +237,7 @@ export function calculateReturnTrends(timelineData: TimelineData[]): {
 /**
  * Format analytics data for export
  */
-export function formatAnalyticsForExport(metrics: AnalyticsMetrics): any[] {
+export function formatAnalyticsForExport(metrics: AnalyticsMetrics): unknown[] {
   return [
     { metric: 'Return Rate', value: `${metrics.returnRate}%` },
     { metric: 'Average Return Time', value: `${metrics.averageReturnTime} days` },

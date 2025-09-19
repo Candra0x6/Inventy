@@ -168,7 +168,7 @@ async function confirmMultiplePickups(request: NextRequest, session: Session) {
   })
 }
 
-async function markOverduePickups(request: NextRequest, session: any) {
+async function markOverduePickups(request: NextRequest, session: Session) {
   const body = await request.json()
   const validatedData = markOverdueSchema.parse(body)
 
@@ -261,7 +261,7 @@ async function markOverduePickups(request: NextRequest, session: any) {
   })
 }
 
-async function generatePickupReport(request: NextRequest, session: any) {
+async function generatePickupReport(request: NextRequest, session: Session) {
   const url = new URL(request.url)
   const days = parseInt(url.searchParams.get('days') || '7')
   const includeDetails = url.searchParams.get('details') === 'true'

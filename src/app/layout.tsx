@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
+import { AnimatedNavbar, defaultNavItems } from "@/components/navigation/animated-navbar";
 import "./globals.css";
 
 const geistSans = Geist({

@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       message: string
       actionUrl: string
       createdAt: Date
-      metadata: Record<string, any>
+      metadata: Record<string, unknown>
     }> = []
 
     // Add overdue notifications

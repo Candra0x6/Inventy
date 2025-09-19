@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { AnimatedButton } from '@/components/ui/animated-button'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { 
   CheckCircle, 
   XCircle, 
@@ -14,7 +18,10 @@ import {
   Eye,
   FileText,
   User,
-  Calendar
+  Calendar,
+  Package,
+  Settings,
+  Search
 } from 'lucide-react'
 import ConditionAssessmentForm from './condition-assessment-form'
 
@@ -49,11 +56,7 @@ interface Return {
   }
 }
 
-interface ReturnApprovalWorkflowProps {
-  onClose: () => void
-}
-
-export default function ReturnApprovalWorkflow({ onClose }: ReturnApprovalWorkflowProps) {
+export default function ReturnApprovalWorkflow() {
   const [loading, setLoading] = useState(true)
   const [returns, setReturns] = useState<Return[]>([])
   const [selectedReturn, setSelectedReturn] = useState<Return | null>(null)
@@ -217,66 +220,133 @@ export default function ReturnApprovalWorkflow({ onClose }: ReturnApprovalWorkfl
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Return Approval Workflow</h1>
-        <Button onClick={onClose} variant="outline">
-          Close
-        </Button>
-      </div>
+    <motion.div 
+      className="max-w-7xl mx-auto p-6 space-y-6"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+        <motion.div variants={fadeInUp} className="p-6 border-b border-border/50">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-sm rounded-xl border border-primary/20">
+                <Settings className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Return Approval Workflow
+                </h1>
+                <p className="text-muted-foreground">
+                  Review and process item return requests
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-      {/* Filter Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-        {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'DAMAGED'].map((status) => (
-          <button
-            key={status}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              filter === status
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-            onClick={() => setFilter(status as typeof filter)}
-          >
-            {status}
-          </button>
-        ))}
-      </div>
+        {/* Enhanced Filter Tabs */}
+        <motion.div variants={fadeInUp} className="p-6 pt-0">
+          <div className="flex flex-wrap gap-2 p-2 bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50">
+            {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'DAMAGED'].map((status) => (
+              <motion.button
+                key={status}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  filter === status
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
+                }`}
+                onClick={() => setFilter(status as typeof filter)}
+              >
+                <div className="flex items-center space-x-2">
+                  {status === 'PENDING' && <Clock className="h-4 w-4" />}
+                  {status === 'APPROVED' && <CheckCircle className="h-4 w-4" />}
+                  {status === 'REJECTED' && <XCircle className="h-4 w-4" />}
+                  {status === 'DAMAGED' && <AlertTriangle className="h-4 w-4" />}
+                  {status === 'ALL' && <FileText className="h-4 w-4" />}
+                  <span>{status}</span>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </AnimatedCard>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-32 bg-gray-200 rounded-lg"></div>
-            </div>
-          ))}
-        </div>
+        <motion.div 
+          variants={fadeInUp}
+          className="space-y-4"
+        >
+          <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="p-6 space-y-6"
+            >
+              {[...Array(5)].map((_, i) => (
+                <motion.div 
+                  key={i}
+                  variants={fadeInUp}
+                  className="h-32 bg-muted/30 rounded-xl animate-pulse"
+                />
+              ))}
+            </motion.div>
+          </AnimatedCard>
+        </motion.div>
       ) : returns.length === 0 ? (
-        <Card className="p-8 text-center">
-          <div className="text-gray-500">
-            <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No returns found</p>
-            <p className="text-sm">
-              {filter === 'ALL' ? 'No returns in the system' : `No ${filter.toLowerCase()} returns`}
-            </p>
-          </div>
-        </Card>
+        <motion.div variants={fadeInUp}>
+          <AnimatedCard className="p-12 text-center bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+            <motion.div 
+              variants={fadeInUp}
+              className="text-muted-foreground"
+            >
+              <div className="p-4 bg-muted/20 rounded-full w-fit mx-auto mb-6">
+                <Clock className="w-12 h-12 opacity-50" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No returns found</h3>
+              <p className="text-muted-foreground mb-6">
+                {filter === 'ALL' ? 'No returns in the system' : `No ${filter.toLowerCase()} returns`}
+              </p>
+              <AnimatedButton variant="outline" onClick={() => setFilter('ALL')}>
+                <Search className="h-4 w-4 mr-2" />
+                Show All Returns
+              </AnimatedButton>
+            </motion.div>
+          </AnimatedCard>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {returns.map((returnItem) => (
-            <Card key={returnItem.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{returnItem.item.name}</h3>
-                    <Badge className={getStatusColor(returnItem.status)}>
-                      {returnItem.status}
-                    </Badge>
-                    {returnItem.penaltyApplied && (
-                      <Badge variant="outline" className="text-red-600 border-red-500">
-                        Penalty Applied
-                      </Badge>
-                    )}
-                  </div>
+        <motion.div 
+          variants={staggerContainer}
+          className="space-y-6"
+        >
+          {returns.map((returnItem, index) => (
+            <motion.div
+              key={returnItem.id}
+              variants={fadeInUp}
+              transition={{ delay: index * 0.1 }}
+            >
+              <AnimatedCard className="overflow-hidden bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 rounded-lg">
+                          <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold">{returnItem.item.name}</h3>
+                        <Badge className={`${getStatusColor(returnItem.status)} shadow-sm`}>
+                          {returnItem.status}
+                        </Badge>
+                        {returnItem.penaltyApplied && (
+                          <Badge className="bg-red-100 text-red-800 border-red-300 shadow-sm">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Penalty Applied
+                          </Badge>
+                        )}
+                      </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
@@ -348,76 +418,77 @@ export default function ReturnApprovalWorkflow({ onClose }: ReturnApprovalWorkfl
                       <p className="text-sm text-blue-700">{returnItem.notes}</p>
                     </div>
                   )}
-                </div>
+                    </div>
 
-                <div className="flex flex-col gap-2 ml-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedReturn(returnItem)}
-                    className="whitespace-nowrap"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Details
-                  </Button>
-                  
-                  {returnItem.status === 'PENDING' && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setSelectedReturn(returnItem)
-                          setShowAssessmentForm(true)
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Assess Condition
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          // Open damage report form in a new tab/window or modal
-                          window.open(`/returns/${returnItem.id}/damage-report`, '_blank')
-                        }}
-                        variant="outline"
-                        className="text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
-                      >
-                        <AlertTriangle className="w-4 h-4 mr-2" />
-                        Report Damage
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(returnItem.id)}
-                        className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Quick Approve
-                      </Button>
-                      
-                      <Button
+                    <div className="flex flex-col gap-2 ml-4">
+                      <AnimatedButton
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          const reason = prompt('Rejection reason:')
-                          if (reason) {
-                            handleReject(returnItem.id, reason)
-                          }
-                        }}
-                        className="text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
+                        onClick={() => setSelectedReturn(returnItem)}
+                        className="whitespace-nowrap"
                       >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Reject
-                      </Button>
-                    </>
-                  )}
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Details
+                      </AnimatedButton>
+                      
+                      {returnItem.status === 'PENDING' && (
+                        <>
+                          <AnimatedButton
+                            size="sm"
+                            onClick={() => {
+                              setSelectedReturn(returnItem)
+                              setShowAssessmentForm(true)
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            Assess Condition
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
+                            size="sm"
+                            onClick={() => {
+                              window.open(`/returns/${returnItem.id}/damage-report`, '_blank')
+                            }}
+                            variant="outline"
+                            className="text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
+                          >
+                            <AlertTriangle className="w-4 h-4 mr-2" />
+                            Report Damage
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
+                            size="sm"
+                            onClick={() => handleApprove(returnItem.id)}
+                            className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Quick Approve
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const reason = prompt('Rejection reason:')
+                              if (reason) {
+                                handleReject(returnItem.id, reason)
+                              }
+                            }}
+                            className="text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Reject
+                          </AnimatedButton>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </AnimatedCard>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Return Details Modal */}
@@ -539,6 +610,6 @@ export default function ReturnApprovalWorkflow({ onClose }: ReturnApprovalWorkfl
           </Card>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

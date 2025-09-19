@@ -5,7 +5,7 @@ import BorrowingDashboard from '@/components/dashboard/borrowing-dashboard'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-export default function MyBorrowingPage() {
+export default function BorrowDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 

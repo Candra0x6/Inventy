@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { UserRole } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 
 const analyticsQuerySchema = z.object({
   startDate: z.string().optional(),
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build base where clause
-    const whereClause: any = {
+    const whereClause: Prisma.ReturnWhereInput = {
       createdAt: {
         gte: startDate,
         lte: endDate,
@@ -115,13 +115,15 @@ export async function GET(request: NextRequest) {
         _count: true,
       }),
 
-      // Overdue returns (where return date > reservation end date)
-      prisma.return.count({
-        where: {
-          ...whereClause,
+      // Overdue returns - get all overdue returns first, then filter in application code
+      prisma.return.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          returnDate: true,
           reservation: {
-            endDate: {
-              lt: prisma.return.fields.returnDate
+            select: {
+              endDate: true
             }
           }
         }
@@ -156,17 +158,16 @@ export async function GET(request: NextRequest) {
         }
       }),
 
-      // Return trends over time (daily for last 30 days)
-      prisma.$queryRaw`
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as count
-        FROM returns
-        WHERE created_at >= ${startDate} AND created_at <= ${endDate}
-        ${validatedParams.userId ? prisma.$queryRaw`AND user_id = ${validatedParams.userId}` : prisma.$queryRaw``}
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `,
+      // Return trends over time - get all returns and group by date in application code
+      prisma.return.findMany({
+        where: whereClause,
+        select: {
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      }),
 
       // Top categories by return volume
       prisma.return.groupBy({
@@ -241,6 +242,23 @@ export async function GET(request: NextRequest) {
     const overdueCount = returnTimeData.filter(item => item.isOverdue).length
     const overdueRate = totalReturns > 0 ? (overdueCount / totalReturns) * 100 : 0
 
+    // Process overdue returns result - count returns where return_date > end_date
+    const overdueReturnsResult = Array.isArray(overdueReturns) 
+      ? overdueReturns.filter(ret => ret.returnDate > ret.reservation.endDate).length
+      : 0
+
+    // Process return trends data - group by date
+    const trendsMap = new Map<string, number>()
+    returnTrends.forEach(ret => {
+      const dateKey = ret.createdAt.toISOString().split('T')[0] // Get YYYY-MM-DD format
+      trendsMap.set(dateKey, (trendsMap.get(dateKey) || 0) + 1)
+    })
+    
+    const processedTrends = Array.from(trendsMap.entries()).map(([date, count]) => ({
+      date,
+      count
+    })).sort((a, b) => a.date.localeCompare(b.date))
+
     // Get category names for top categories
     const topCategoryData = await Promise.all(
       topCategories.map(async (cat) => {
@@ -278,7 +296,7 @@ export async function GET(request: NextRequest) {
     const analytics = {
       summary: {
         totalReturns,
-        overdueReturns: overdueCount,
+        overdueReturns: overdueReturnsResult,
         overdueRate: Math.round(overdueRate * 100) / 100,
         damageReports,
         avgPlannedTime: Math.round(avgPlannedTime * 100) / 100,
@@ -300,7 +318,7 @@ export async function GET(request: NextRequest) {
         topUsers: topUserData.slice(0, 5),
       },
       trends: {
-        daily: returnTrends,
+        daily: processedTrends,
         timeframe: validatedParams.timeframe,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),

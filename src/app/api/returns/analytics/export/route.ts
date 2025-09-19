@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
     const endDate = validatedParams.endDate ? new Date(validatedParams.endDate) : now
 
     // Build where clause
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {
       createdAt: {
         gte: startDate,
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any[] = []
     let filename = ''
 

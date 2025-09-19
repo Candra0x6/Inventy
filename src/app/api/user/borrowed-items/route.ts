@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
 
     // Get user's borrowed items
     const reservations = await prisma.reservation.findMany({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       where: where as any,
       include: {
         item: true

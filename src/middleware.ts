@@ -2,6 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { UserRole } from '@prisma/client'
 
+// Helper function to clean duplicate NextAuth cookies in middleware
+function cleanupDuplicateCookies(request: NextRequest, response: NextResponse) {
+  const cookies = request.cookies
+  const sessionTokens = []
+  
+  // Find all session tokens
+  for (const [name, value] of cookies) {
+    if (name === 'next-auth.session-token') {
+      sessionTokens.push(value.value)
+    }
+  }
+  
+  // If there are multiple session tokens, clear all and keep only the last one
+  if (sessionTokens.length > 1) {
+    console.log(`Found ${sessionTokens.length} duplicate session tokens, cleaning up...`)
+    
+    // Clear all session tokens
+    response.cookies.delete('next-auth.session-token')
+    
+    // Set only the most recent one
+    if (sessionTokens.length > 0) {
+      response.cookies.set('next-auth.session-token', sessionTokens[sessionTokens.length - 1], {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      })
+    }
+  }
+  
+  return response
+}
+
 // Define protected routes and their required permissions
 const PROTECTED_ROUTES = {
   '/dashboard': ['SUPER_ADMIN', 'MANAGER', 'STAFF', 'BORROWER'],
@@ -81,11 +114,14 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-department', token.departmentId as string)
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   })
+  
+  // Clean up any duplicate cookies before returning
+  return cleanupDuplicateCookies(request, response)
 }
 
 export const config = {

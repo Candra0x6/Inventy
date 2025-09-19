@@ -20,6 +20,8 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   return (
     <NextThemesProvider
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
       attribute={attribute}
       defaultTheme={defaultTheme}
       enableSystem={enableSystem}
