@@ -385,7 +385,7 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
                   {canApprove() && reservation.status === 'PENDING' && (
                     <>
                       <AnimatedButton
-                        onClick={() => updateReservationStatus('APPROVED')}
+                        onClick={() => updateReservationStatus('ACTIVE')}
                         disabled={updating}
                         className="bg-green-600 hover:bg-green-700"
                       >
@@ -403,8 +403,8 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
                       </AnimatedButton>
                     </>
                   )}
-                  
-                  {['PENDING', 'APPROVED'].includes(reservation.status) && (
+
+                  {['PENDING', 'APPROVED', 'ACTIVE'].includes(reservation.status) && (
                     <AnimatedButton
                       variant="outline"
                       onClick={cancelReservation}
