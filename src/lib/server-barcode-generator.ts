@@ -1,64 +1,66 @@
 import { supabaseAdmin } from '@/lib/supabase/server'
-import JsBarcode from 'jsbarcode'
+import QRCode from 'qrcode'
 import { createCanvas } from 'canvas'
 
-export interface ServerBarcodeOptions {
-  format?: 'CODE128' | 'EAN13' | 'EAN8' | 'UPC' | 'CODE39' | 'ITF14'
+export interface ServerQRCodeOptions {
   width?: number
   height?: number
-  displayValue?: boolean
-  fontSize?: number
-  background?: string
-  lineColor?: string
+  margin?: number
+  color?: {
+    dark?: string
+    light?: string
+  }
+  errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H'
 }
 
 /**
- * Generate barcode using JsBarcode and Canvas
+ * Generate QR code using qrcode library
  */
-function generateBarcodeBuffer(value: string, options: ServerBarcodeOptions = {}): Buffer {
+async function generateQRCodeBuffer(value: string, options: ServerQRCodeOptions = {}): Promise<Buffer> {
   const {
-    format = 'CODE128',
-    width = 2,
-    height = 100,
-    displayValue = true,
-    fontSize = 14,
-    background = '#ffffff',
-    lineColor = '#000000'
+    width = 256,
+    height = 256,
+    margin = 4,
+    color = {
+      dark: '#000000',
+      light: '#FFFFFF'
+    },
+    errorCorrectionLevel = 'M'
   } = options
 
   // Create a canvas
-  const canvas = createCanvas(400, height + (displayValue ? fontSize + 20 : 10))
-  
-  // Generate barcode using JsBarcode
-  JsBarcode(canvas, value, {
-    format,
+  const canvas = createCanvas(width, height)
+
+  // Generate QR code using qrcode library
+  const qrOptions = {
     width,
     height,
-    fontSize,
-    background,
-    lineColor,
-    textMargin: 10,
-    margin: 10
-  })
+    margin,
+    color,
+    errorCorrectionLevel
+  }
+
+  // Generate QR code on canvas
+  await QRCode.toCanvas(canvas, value, qrOptions)
 
   // Convert canvas to buffer
   return canvas.toBuffer('image/png')
 }
 
 /**
- * Upload barcode image to Supabase storage
+ * Upload QR code image to Supabase storage
  */
 export async function uploadBarcodeToSupabase(
   value: string,
   itemId: string,
-  options: ServerBarcodeOptions = {}
+  options: ServerQRCodeOptions = {}
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     // Generate barcode buffer
-    const barcodeBuffer = generateBarcodeBuffer(value, options)
+    const barcodeBuffer = await generateQRCodeBuffer(value, options)
     
     // Create filename
-    const filename = `barcodes/${itemId}_${value}.png`
+    const filename = `qrcodes/${itemId}_${value}.png`
     
     // Upload to Supabase storage
     const { error } = await supabaseAdmin.storage
@@ -96,11 +98,11 @@ export async function uploadBarcodeToSupabase(
 }
 
 /**
- * Generate and upload barcode for an item
+ * Generate and upload QR code for an item
  */
 export async function generateAndUploadBarcode(
   itemId: string,
-  options: ServerBarcodeOptions = {}
+  options: ServerQRCodeOptions = {}
 ): Promise<{ success: boolean; barcodeUrl?: string; barcodeValue?: string; error?: string }> {
   try {
     // Use item ID as barcode value
@@ -132,10 +134,10 @@ export async function generateAndUploadBarcode(
 }
 
 /**
- * Generate barcode data URL (for immediate use)
+ * Generate QR code data URL (for immediate use)
  */
-export function generateBarcodeDataUrl(value: string, options: ServerBarcodeOptions = {}): string {
-  const barcodeBuffer = generateBarcodeBuffer(value, options)
+export async function generateBarcodeDataUrl(value: string, options: ServerQRCodeOptions = {}): Promise<string> {
+  const barcodeBuffer = await generateQRCodeBuffer(value, options)
   const base64 = barcodeBuffer.toString('base64')
   return `data:image/png;base64,${base64}`
 }

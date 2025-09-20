@@ -284,23 +284,24 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Generate and upload barcode automatically
-    const barcodeResult = await generateAndUploadBarcode(item.id, {
-      format: 'CODE128',
-      width: 2,
-      height: 100,
-      displayValue: true,
-      fontSize: 14,
-      background: '#ffffff',
-      lineColor: '#000000'
+    // Generate and upload QR code automatically
+    const qrCodeResult = await generateAndUploadBarcode(item.id, {
+      width: 256,
+      height: 256,
+      margin: 4,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      errorCorrectionLevel: 'M'
     })
 
-    // Update item with barcode information if generation was successful
-    if (barcodeResult.success && barcodeResult.barcodeUrl && barcodeResult.barcodeValue) {
+    // Update item with QR code information if generation was successful
+    if (qrCodeResult.success && qrCodeResult.barcodeUrl && qrCodeResult.barcodeValue) {
       const updatedItem = await prisma.item.update({
         where: { id: item.id },
         data: {
-          barcode: barcodeResult.barcodeUrl,
+          barcode: qrCodeResult.barcodeUrl,
         },
         include: {
           createdBy: {
@@ -316,7 +317,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(updatedItem, { status: 201 })
     } else {
       // If barcode generation failed, log the error but still return the item
-      console.error('Barcode generation failed:', barcodeResult.error)
+      console.error('Barcode generation failed:', qrCodeResult.error)
       return NextResponse.json(item, { status: 201 })
     }
 

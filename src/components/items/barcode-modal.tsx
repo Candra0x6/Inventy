@@ -18,30 +18,10 @@ interface BarcodeModalProps {
 }
 
 export function BarcodeModal({ isOpen, onClose, itemName, barcode, itemId }: BarcodeModalProps) {
-  const [barcodeImage, setBarcodeImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Generate barcode image when modal opens
-  useEffect(() => {
-    if (isOpen && barcode) {
-      setIsLoading(true)
-      try {
-        const result = generateBarcode(barcode)
-        if (result.success && result.dataUrl) {
-          setBarcodeImage(result.dataUrl)
-        } else {
-          console.error('Failed to generate barcode:', result.error)
-          toast.error(result.error || 'Failed to generate barcode')
-        }
-      } catch {
-        toast.error('Failed to generate barcode')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }, [isOpen, barcode])
-
+ 
   // Handle copy barcode value
   const handleCopyBarcode = async () => {
     if (barcode) {
@@ -57,18 +37,35 @@ export function BarcodeModal({ isOpen, onClose, itemName, barcode, itemId }: Bar
   }
 
   // Handle download barcode image
-  const handleDownloadBarcode = () => {
-    if (barcodeImage) {
-      const link = document.createElement('a')
-      link.href = barcodeImage
-      link.download = `${itemName.replace(/\s+/g, '_')}_barcode.png`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      toast.success('Barcode image downloaded')
+  const handleDownloadBarcode = async () => {
+    if (barcode) {
+      try {
+        // Fetch the image from the URL
+        const response = await fetch(barcode)
+        if (!response.ok) {
+          throw new Error('Failed to fetch barcode image')
+        }
+
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${itemName.replace(/\s+/g, '_')}_barcode.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // Clean up the blob URL
+        URL.revokeObjectURL(url)
+
+        toast.success('Barcode image downloaded')
+      } catch (error) {
+        console.error('Error downloading barcode:', error)
+        toast.error('Failed to download barcode image')
+      }
     }
   }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto">
@@ -108,7 +105,7 @@ export function BarcodeModal({ isOpen, onClose, itemName, barcode, itemId }: Bar
                 >
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </motion.div>
-              ) : barcodeImage ? (
+              ) : barcode ? (
                 <motion.div
                   key="barcode"
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -117,7 +114,7 @@ export function BarcodeModal({ isOpen, onClose, itemName, barcode, itemId }: Bar
                   className="w-full h-full"
                 >
                   <Image
-                    src={barcodeImage}
+                    src={barcode}
                     alt={`Barcode for ${itemName}`}
                     width={300}
                     height={500}
@@ -141,7 +138,7 @@ export function BarcodeModal({ isOpen, onClose, itemName, barcode, itemId }: Bar
           </div>
 
           {/* Actions */}
-          {barcode && barcodeImage && (
+          {barcode && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
