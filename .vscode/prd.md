@@ -12,7 +12,7 @@ Here’s the refined version:
 
 ## 1. Overview
 
-BorrowHub is a **web platform built with Next.js and Supabase** that enables organizations to **borrow and return goods without monetary transactions**.
+Inventy is a **web platform built with Next.js and Supabase** that enables organizations to **borrow and return goods without monetary transactions**.
 It focuses on **resource sharing, accountability, and transparency**, ensuring items are efficiently used and reducing waste.
 
 The system includes:

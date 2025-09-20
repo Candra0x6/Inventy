@@ -3,10 +3,11 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
-import { Menu, X, Home, Users, Settings, Bell, Search } from 'lucide-react'
+import { Menu, X, Home, Users, BoxIcon } from 'lucide-react'
 
 interface NavItem {
   href: string
@@ -22,6 +23,12 @@ interface AnimatedNavbarProps {
 
 export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Hide navbar on dashboard pages
+  if (pathname?.startsWith('/dashboard')) {
+    return null
+  }
 
   return (
     <div className="flex w-full items-center justify-center mb-20">
@@ -288,8 +295,7 @@ export function BottomNavigation({ items, activeIndex, onItemClick, className }:
 // Example navigation items
 export const defaultNavItems: NavItem[] = [
   { href: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
+  { href: '/items', label: 'Items', icon: <BoxIcon className="w-4 h-4" /> },
   { href: '/dashboard', label: 'Dashboard', icon: <Users className="w-4 h-4" /> },
-  { href: '/search', label: 'Search', icon: <Search className="w-4 h-4" /> },
-  { href: '/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
-  { href: '/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
+
 ]

@@ -119,7 +119,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
-                <AnimatedButton size="lg" className="text-lg px-8 py-4">
+                <AnimatedButton onClick={() => {window.location.href = '/auth/login'}} size="lg" className="text-lg px-8 py-4">
                   Get Started Free
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </AnimatedButton>
@@ -128,23 +128,7 @@ export default function Home() {
                 </AnimatedButton>
               </motion.div>
 
-              <motion.div 
-                variants={fadeInUp}
-                className="flex items-center justify-center space-x-8 text-sm text-muted-foreground"
-              >
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>No Credit Card Required</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>14-Day Free Trial</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Setup in Minutes</span>
-                </div>
-              </motion.div>
+           
             </motion.div>
 
             {/* Floating Animation Elements */}
@@ -174,31 +158,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-6xl">
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-            >
-              {stats.map((stat) => (
-                <motion.div key={stat.label} variants={fadeInUp}>
-                  <StatsCard
-                    value={stat.value}
-                    label={stat.label}
-                    change={stat.change}
-                    trend={stat.trend}
-                    icon={<TrendingUp className="w-6 h-6" />}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
+    
         {/* Features Section */}
         <section className="py-20 px-4">
           <div className="container mx-auto max-w-6xl">
@@ -240,66 +200,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section className="py-20 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-6xl">
-            <motion.div
-              className="text-center space-y-4 mb-16"
-              variants={fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-                Loved by Teams
-                <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                  {" "}Worldwide
-                </span>
-              </h2>
-              <div className="flex items-center justify-center space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                ))}
-                <span className="ml-2 text-muted-foreground">4.9/5 from 500+ reviews</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-            >
-              {testimonials.map((testimonial) => (
-                <motion.div key={testimonial.name} variants={fadeInUp}>
-                  <AnimatedCard className="h-full">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <p className="text-muted-foreground italic">
-                        &ldquo;{testimonial.content}&rdquo;
-                      </p>
-                      <div className="flex items-center space-x-3 pt-4 border-t border-border">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </AnimatedCard>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
+    
         {/* CTA Section */}
         <section className="py-20 px-4">
           <div className="container mx-auto max-w-4xl">
@@ -321,13 +222,11 @@ export default function Home() {
                     Join thousands of teams who trust Inventy to manage their inventory operations efficiently.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <AnimatedButton size="lg" className="text-lg px-8">
-                      Start Free Trial
+                    <AnimatedButton onClick={() => {window.location.href = '/auth/login'}} size="lg" className="text-lg px-8">
+                      Start
                       <ArrowRight className="ml-2 w-5 h-5" />
                     </AnimatedButton>
-                    <AnimatedButton variant="outline" size="lg" className="text-lg px-8">
-                      Schedule Demo
-                    </AnimatedButton>
+              
                   </div>
                   <p className="text-sm text-muted-foreground">
                     No credit card required • Setup in under 5 minutes

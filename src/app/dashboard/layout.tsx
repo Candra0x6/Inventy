@@ -1,26 +1,36 @@
 "use client"
 import { ReactNode, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Users, Calendar, Package, CheckCircle, Clock, AlertTriangle, BarChart3, Menu, X, ChevronRight, Home } from 'lucide-react';
+import { Shield, Users, Calendar, Package, CheckCircle, Clock, AlertTriangle, BarChart3, Menu, X, ChevronRight, Home, Bell, Search, LogOut, HomeIcon } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { fadeInUp, staggerContainer } from '@/lib/animations';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
+import { DropdownMenu } from '@/components/navigation/dropdown-menu';
 
-const navTabs = [
+const adminNavTabs = [
+    { path: '/dashboard', label: 'Main', icon: <HomeIcon className="w-4 h-4" /> },
+
   { path: '/dashboard/items', label: 'Items', icon: <Package className="w-4 h-4" /> },
-  { path: '/dashboard/reservations', label: 'Reservations', icon: <Calendar className="w-4 h-4" /> },
   { path: '/dashboard/returns', label: 'Returns', icon: <CheckCircle className="w-4 h-4" /> },
   { path: '/dashboard/late-tracking', label: 'Late Tracking', icon: <Clock className="w-4 h-4" /> },
   { path: '/dashboard/damage-management', label: 'Damage', icon: <AlertTriangle className="w-4 h-4" /> },
   { path: '/dashboard/analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
+const borrowerNavTabs = [
+  { path: '/dashboard', label: 'Overview', icon: <Home className="w-4 h-4" /> },
+  { path: '/dashboard/my-items', label: 'My Items', icon: <Package className="w-4 h-4" /> },
+  { path: '/dashboard/my-analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
+  { path: '/dashboard/my-notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
+];
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
+  
   const router = useRouter()
   const pathname = usePathname()
   console.log('Current pathname:', pathname);
@@ -32,11 +42,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       return
     }
 
-    // Check if user has super admin role
-    if (session.user?.role !== 'SUPER_ADMIN') {
-      router.push('/unauthorized')
-      return
-    }
+    
   }, [session, status, router])
 
   if (status === 'loading') {
@@ -50,9 +56,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     )
   }
 
-  if (!session || session.user?.role !== 'SUPER_ADMIN') {
+  if (!session) {
     return null // Will redirect in useEffect
   }
+
+  const isAdmin = session.user?.role === 'SUPER_ADMIN' || session.user?.role === 'MANAGER' || session.user?.role === 'STAFF'
+  const isBorrower = session.user?.role === 'BORROWER'
+
+  if (!isAdmin && !isBorrower) {
+    return null // Invalid role
+  }
+
+  const navTabs = isAdmin ? adminNavTabs : borrowerNavTabs
   const activeTab = navTabs.find(tab => tab.path === pathname)?.path || '';
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 max-w-5xl mx-auto">
@@ -96,15 +111,34 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             {/* User Info and Theme Toggle */}
             <div className="flex items-center space-x-3">
-              <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-card/50 backdrop-blur-sm border border-border/40 rounded-lg">
+             
+               <DropdownMenu
+               isDropdown={false}
+               className='cursor-pointer'
+                  trigger={ <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-card/50 backdrop-blur-sm border border-border/40 rounded-lg">
                 <div className="w-6 h-6 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center">
                   <Users className="w-3 h-3 text-primary" />
                 </div>
-                <div className="text-xs">
+               {isAdmin ? <div className="text-xs">
                   <p className="font-medium">Super Admin</p>
                   <p className="text-muted-foreground">Admin</p>
-                </div>
-              </div>
+                </div> : <div className="text-xs">
+                  <p className="font-medium">User</p>
+                  <p className="text-muted-foreground">Borrower</p>
+                </div>}
+                 
+              </div>}
+                  items={[
+                    { 
+                      label: 'Log Out',
+                      onClick: () => { signOut() },
+                      href: '/auth/logout',
+                      icon: <LogOut className="h-4 w-4" />,
+                      description: 'Sign out of your account'
+                    },
+                   
+                  ]}
+                />
               {/* Mobile menu button */}
               <motion.button
                 className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
@@ -182,7 +216,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="pt-16">
         <div className="container mx-auto px-4 lg:px-8 py-6">
           {/* Enhanced Content Header */}
-          <motion.div
+         {isAdmin && <motion.div
             className="mb-8"
             variants={fadeInUp}
             initial="hidden"
@@ -230,7 +264,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </div>
             </motion.div>
             
-          </motion.div>
+          </motion.div>}
           {children}
         </div>
       </div>

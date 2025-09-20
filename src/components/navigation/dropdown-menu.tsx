@@ -10,15 +10,17 @@ interface DropdownItem {
   href: string
   icon?: React.ReactNode
   description?: string
+  onClick?: () => void
 }
 
 interface DropdownMenuProps {
   trigger: React.ReactNode
   items: DropdownItem[]
   className?: string
+  isDropdown?: boolean
 }
 
-export function DropdownMenu({ trigger, items, className = '' }: DropdownMenuProps) {
+export function DropdownMenu({ trigger, items, className = '', isDropdown = true }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -28,7 +30,7 @@ export function DropdownMenu({ trigger, items, className = '' }: DropdownMenuPro
         className="flex items-center space-x-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         {trigger}
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      {isDropdown && <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />}
       </button>
 
       <AnimatePresence>
@@ -54,7 +56,8 @@ export function DropdownMenu({ trigger, items, className = '' }: DropdownMenuPro
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className="flex items-start space-x-3 p-3 rounded-md hover:bg-muted/50 transition-colors group"
-                    onClick={() => setIsOpen(false)}
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    onClick={() => {  setIsOpen(false); item.onClick && item.onClick(); }}
                   >
                     {item.icon && (
                       <div className="text-muted-foreground group-hover:text-foreground transition-colors">

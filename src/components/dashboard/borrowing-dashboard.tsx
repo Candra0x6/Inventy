@@ -7,13 +7,10 @@ import { AnimatedButton } from '@/components/ui/animated-button'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/lib/auth/auth-context'
 import ReputationDisplay from '@/components/profile/reputation-display'
 import { Breadcrumb } from '@/components/navigation/breadcrumb'
 import { DropdownMenu, MobileMenu } from '@/components/navigation/dropdown-menu'
-import { ResponsiveFilter } from '@/components/ui/responsive-components'
 import { LoadingState, EmptyState } from '@/components/ui/loading-states'
 import { ExtendDialog, ReturnDialog, CancelDialog } from '@/components/ui/confirmation-dialog'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
@@ -24,20 +21,16 @@ import {
   Hourglass,
   TrendingUp,
   BarChart3,
-  Bell,
   RefreshCw,
   Search,
   Calendar,
   User,
   Settings,
   ArrowRight,
-  Clock,
-  Download,
-  XCircle,
-  Eye,
-  MapPin
+  Clock
 } from 'lucide-react'
 import { Item, Reservation } from '@prisma/client'
+import { ThemeToggle } from '../theme/theme-toggle'
 
 interface BorrowedItem {
   id: string
@@ -59,67 +52,15 @@ interface DashboardStats {
   completedBorrowings: number
 }
 
-interface Notification {
-  id: string
-  type: 'warning' | 'info' | 'success' | 'error'
-  title: string
-  message: string
-  isRead: boolean
-  createdAt: string
-  actionUrl?: string
-}
-
-interface UsageAnalytics {
-  averageBorrowDuration: number
-  punctualityRate: number
-  mostBorrowedCategories: { category: string; count: number }[]
-  borrowingTrends: { month: string; count: number }[]
-}
-
-interface TabButtonProps {
-  active: boolean
-  onClick: () => void
-  icon: React.ReactNode
-  label: string
-  badge?: number
-  badgeColor?: string
-  className?: string
-}
-
-function TabButton({ active, onClick, icon, label, badge, badgeColor = 'bg-primary', className = '' }: TabButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${className} ${
-        active
-          ? 'border-primary text-primary bg-primary/5'
-          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground hover:bg-muted/50'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-      {badge !== undefined && badge > 0 && (
-        <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white rounded-full ${badgeColor}`}>
-          {badge}
-        </span>
-      )}
-    </button>
-  )
-}
-
 export default function BorrowingDashboard() {
   const { user } = useAuth()
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItem[]>([])
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
-  const [usageAnalytics, setUsageAnalytics] = useState<UsageAnalytics | null>(null)
-  const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'analytics' | 'notifications'>('overview')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'overdue' | 'due_soon'>('all')
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [extendDialog, setExtendDialog] = useState<{ isOpen: boolean; item: BorrowedItem | null; loading: boolean }>({ isOpen: false, item: null, loading: false })
   const [returnDialog, setReturnDialog] = useState<{ isOpen: boolean; item: BorrowedItem | null; loading: boolean }>({ isOpen: false, item: null, loading: false })
   const [cancelDialog, setCancelDialog] = useState<{ isOpen: boolean; item: BorrowedItem | null; loading: boolean }>({ isOpen: false, item: null, loading: false })
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -127,15 +68,13 @@ export default function BorrowingDashboard() {
     }
   }, [user])
 
-    const fetchDashboardData = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      
-      const [statsRes, itemsRes, analyticsRes, notificationsRes] = await Promise.all([
+
+      const [statsRes, itemsRes] = await Promise.all([
         fetch('/api/user/borrowing-stats'),
-        fetch('/api/user/borrowed-items'),
-        fetch('/api/user/usage-analytics'),
-        fetch('/api/user/notifications?limit=10')
+        fetch('/api/user/borrowed-items')
       ])
 
       if (statsRes.ok) {
@@ -146,16 +85,6 @@ export default function BorrowingDashboard() {
       if (itemsRes.ok) {
         const items = await itemsRes.json()
         setBorrowedItems(items.items || [])
-      }
-
-      if (analyticsRes.ok) {
-        const analytics = await analyticsRes.json()
-        setUsageAnalytics(analytics)
-      }
-
-      if (notificationsRes.ok) {
-        const notif = await notificationsRes.json()
-        setNotifications(notif.notifications || [])
       }
 
     } catch (error) {
@@ -210,10 +139,6 @@ export default function BorrowingDashboard() {
     }
   }
 
-  const handleCancelReservation = (item: BorrowedItem) => {
-    setCancelDialog({ isOpen: true, item, loading: false })
-  }
-
   const confirmCancelReservation = async () => {
     if (!cancelDialog.item) return
     
@@ -229,34 +154,6 @@ export default function BorrowingDashboard() {
     } catch (error) {
       console.error('Error cancelling reservation:', error)
       setCancelDialog(prev => ({ ...prev, loading: false }))
-    }
-  }
-
-
-
-  const getFilteredItems = () => {
-    switch (filterStatus) {
-      case 'active':
-        return borrowedItems.filter(item => !item.isOverdue && item.daysRemaining > 0)
-      case 'overdue':
-        return borrowedItems.filter(item => item.isOverdue)
-      case 'due_soon':
-        return borrowedItems.filter(item => item.daysRemaining <= 3 && item.daysRemaining > 0)
-      default:
-        return borrowedItems
-    }
-  }
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-orange-500" />
-      case 'error':
-        return <XCircle className="h-5 w-5 text-red-500" />
-      case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      default:
-        return <Bell className="h-5 w-5 text-blue-500" />
     }
   }
 
@@ -328,11 +225,8 @@ export default function BorrowingDashboard() {
                     }
                   ]}
                 />
-                
-                <AnimatedButton variant="outline" size="sm" onClick={fetchDashboardData}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </AnimatedButton>
+
+                <ThemeToggle />
                 
                 {/* Mobile Menu */}
                 <MobileMenu 
@@ -434,68 +328,17 @@ export default function BorrowingDashboard() {
             </div>
           </motion.div>
 
-          {/* Simplified Tab Navigation */}
+          {/* Main Content */}
           <motion.div variants={fadeInUp}>
             <AnimatedCard className="bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm border border-border/40 shadow-sm overflow-hidden">
-              {/* Mobile-First Tab Navigation */}
-              <div className="border-b border-border/30">
-                <div className="flex overflow-x-auto scrollbar-hide">
-                  <nav className="flex space-x-0 min-w-full" aria-label="Tabs">
-                    <TabButton
-                      active={activeTab === 'overview'}
-                      onClick={() => setActiveTab('overview')}
-                      icon={<BarChart3 className="w-4 h-4" />}
-                      label="Overview"
-                      badge={borrowedItems.filter(i => i.isOverdue).length > 0 ? borrowedItems.filter(i => i.isOverdue).length : undefined}
-                    />
-                    <TabButton
-                      active={activeTab === 'items'}
-                      onClick={() => setActiveTab('items')}
-                      icon={<Package className="w-4 h-4" />}
-                      label="My Items"
-                      badge={borrowedItems.length}
-                    />
-                    <TabButton
-                      active={activeTab === 'analytics'}
-                      onClick={() => setActiveTab('analytics')}
-                      icon={<TrendingUp className="w-4 h-4" />}
-                      label="Analytics"
-                      className="hidden sm:flex"
-                    />
-                    <TabButton
-                      active={activeTab === 'notifications'}
-                      onClick={() => setActiveTab('notifications')}
-                      icon={<Bell className="w-4 h-4" />}
-                      label="Alerts"
-                      badge={notifications.filter(n => !n.isRead).length}
-                      badgeColor="bg-red-500"
-                    />
-                  </nav>
-                </div>
-              </div>
-
-              {/* Tab Content */}
               <div className="p-8">
                 <motion.div
-                  key={activeTab}
                   variants={fadeInUp}
                   initial="hidden"
                   animate="visible"
                   className="space-y-8"
                 >
-                  {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Reputation Display */}
-                      <div className="lg:col-span-1">
-                        {user && (
-                          <ReputationDisplay
-                            userId={user.id}
-                            currentTrustScore={(user as { trustScore?: number })?.trustScore || 100}
-                            showHistory={true}
-                          />
-                        )}
-                      </div>
-
+           
                       {/* Quick Actions & Recent Activity */}
                       <div className="lg:col-span-2 space-y-6">
                         {/* Quick Actions */}
@@ -552,9 +395,11 @@ export default function BorrowingDashboard() {
                                 <Clock className="h-5 w-5" />
                                 <span>Recent Borrowed Items</span>
                               </div>
-                              <AnimatedButton variant="outline" size="sm" onClick={() => setActiveTab('items')}>
-                                View All <ArrowRight className="h-4 w-4 ml-1" />
-                              </AnimatedButton>
+                              <Link href="/dashboard/my-items">
+                                <AnimatedButton variant="outline" size="sm">
+                                  View All <ArrowRight className="h-4 w-4 ml-1" />
+                                </AnimatedButton>
+                              </Link>
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
@@ -627,294 +472,6 @@ export default function BorrowingDashboard() {
                           </CardContent>
                         </AnimatedCard>
                       </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'items' && (
-                    <div className="space-y-6">
-                      {/* Responsive Filters */}
-                      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <div className="flex items-center space-x-4 w-full sm:w-auto">
-                          <Label className="text-sm font-medium whitespace-nowrap">Filter:</Label>
-                          <ResponsiveFilter
-                            options={[
-                              { value: 'all', label: 'All Items', count: borrowedItems.length },
-                              { value: 'active', label: 'Active', count: borrowedItems.filter(i => !i.isOverdue && i.daysRemaining > 0).length },
-                              { value: 'overdue', label: 'Overdue', count: borrowedItems.filter(i => i.isOverdue).length },
-                              { value: 'due_soon', label: 'Due Soon', count: borrowedItems.filter(i => i.daysRemaining <= 3 && i.daysRemaining > 0).length }
-                            ]}
-                            value={filterStatus}
-                            onChange={(value) => setFilterStatus(value as 'all' | 'active' | 'overdue' | 'due_soon')}
-                            className="flex-1 sm:flex-none"
-                          />
-                        </div>
-                        <AnimatedButton variant="outline" size="sm" className="w-full sm:w-auto">
-                          <Download className="h-4 w-4 mr-2" />
-                          Export List
-                        </AnimatedButton>
-                      </div>
-
-                      {/* Items Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {getFilteredItems().map((item) => (
-                          <AnimatedCard 
-                            key={item.id} 
-                            className={`bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                              item.isOverdue 
-                                ? 'border-red-200 dark:border-red-800' 
-                                : item.daysRemaining <= 3 
-                                ? 'border-orange-200 dark:border-orange-800'
-                                : 'border-green-200 dark:border-green-800'
-                            }`}
-                          >
-                            <CardHeader className="pb-3">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <CardTitle className="text-lg">{item.item.name}</CardTitle>
-                                  <p className="text-sm text-muted-foreground">{item.item.category}</p>
-                                  {item.item.location && (
-                                    <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                                      <MapPin className="h-3 w-3 mr-1" />
-                                      {item.item.location}
-                                    </div>
-                                  )}
-                                </div>
-                                {item.item.images && item.item.images[0] && (
-                                  <div className="w-16 h-16 bg-muted/20 rounded-lg flex items-center justify-center">
-                                    <Package className="h-8 w-8 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              {/* Status and Timeline */}
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                  <span>Borrowed:</span>
-                                  <span>{new Date(item.reservation.startDate).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span>Due Date:</span>
-                                  <span className={item.isOverdue ? 'text-red-600 font-medium' : ''}>
-                                    {new Date(item.reservation.endDate).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                
-                                {item.isOverdue ? (
-                                  <Badge variant="destructive" className="w-full justify-center">
-                                    <AlertTriangle className="h-3 w-3 mr-1" />
-                                    {item.daysOverdue} days overdue
-                                  </Badge>
-                                ) : (
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                      <span>Time Remaining:</span>
-                                      <span className={item.daysRemaining <= 3 ? 'text-orange-600 font-medium' : ''}>
-                                        {item.daysRemaining} days
-                                      </span>
-                                    </div>
-                                    <Progress 
-                                      value={100 - (item.daysRemaining / ((new Date(item.reservation.endDate).getTime() - new Date(item.reservation.startDate).getTime()) / (1000 * 60 * 60 * 24))) * 100} 
-                                      className="h-2" 
-                                    />
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Purpose */}
-                              {item.reservation.purpose && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">Purpose: </span>
-                                  <span>{item.reservation.purpose}</span>
-                                </div>
-                              )}
-
-                              {/* Action Buttons */}
-                              <div className="flex gap-2">
-                                <AnimatedButton 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="flex-1"
-                                  onClick={() => window.location.href = `/items/${item.item.id}`}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </AnimatedButton>
-                                
-                                {item.canExtend && (
-                                  <AnimatedButton 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleExtendBorrowing(item)}
-                                  >
-                                    <Clock className="h-4 w-4 mr-1" />
-                                    Extend
-                                  </AnimatedButton>
-                                )}
-                                
-                                {item.canReturn && (
-                                  <AnimatedButton 
-                                    size="sm"
-                                    onClick={() => handleReturnItem(item)}
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Return
-                                  </AnimatedButton>
-                                )}
-                                
-                                {item.canCancel && (
-                                  <AnimatedButton 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleCancelReservation(item)}
-                                  >
-                                    <XCircle className="h-4 w-4 mr-1" />
-                                    Cancel
-                                  </AnimatedButton>
-                                )}
-                              </div>
-                            </CardContent>
-                          </AnimatedCard>
-                        ))}
-                      </div>
-
-                      {getFilteredItems().length === 0 && (
-                        <EmptyState
-                          icon={<Package className="h-16 w-16 mx-auto text-muted-foreground/50" />}
-                          title="No items found"
-                          description={
-                            filterStatus === 'all' 
-                              ? "You haven't borrowed any items yet." 
-                              : `No items match the "${filterStatus}" filter.`
-                          }
-                          action={
-                            <AnimatedButton onClick={() => window.location.href = '/items'}>
-                              <Search className="h-4 w-4 mr-2" />
-                              Browse Available Items
-                            </AnimatedButton>
-                          }
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === 'analytics' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Usage Statistics */}
-                      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <BarChart3 className="h-5 w-5" />
-                            <span>Usage Statistics</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                                <div className="text-2xl font-bold text-blue-600">
-                                  {usageAnalytics?.averageBorrowDuration?.toFixed(1) || '0'} days
-                                </div>
-                                <div className="text-sm text-muted-foreground">Avg. Borrow Duration</div>
-                              </div>
-                              <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                                <div className="text-2xl font-bold text-green-600">
-                                  {usageAnalytics?.punctualityRate?.toFixed(1) || '0'}%
-                                </div>
-                                <div className="text-sm text-muted-foreground">On-time Return Rate</div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <h4 className="font-medium mb-3">Most Borrowed Categories</h4>
-                              <div className="space-y-3">
-                                {usageAnalytics?.mostBorrowedCategories?.map((cat) => (
-                                  <div key={cat.category} className="flex items-center justify-between">
-                                    <span className="text-sm">{cat.category}</span>
-                                    <div className="flex items-center space-x-2">
-                                      <Progress value={(cat.count / Math.max(...(usageAnalytics?.mostBorrowedCategories?.map(c => c.count) || [1]))) * 100} className="w-20 h-2" />
-                                      <span className="text-sm font-medium w-8">{cat.count}</span>
-                                    </div>
-                                  </div>
-                                )) || (
-                                  <p className="text-sm text-muted-foreground text-center py-4">No usage data available</p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </AnimatedCard>
-
-                      {/* Borrowing Trends */}
-                      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <TrendingUp className="h-5 w-5" />
-                            <span>Borrowing Trends</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            {usageAnalytics?.borrowingTrends?.map((trend) => (
-                              <div key={trend.month} className="flex items-center justify-between">
-                                <span className="text-sm">{trend.month}</span>
-                                <div className="flex items-center space-x-2">
-                                  <Progress 
-                                    value={(trend.count / Math.max(...(usageAnalytics?.borrowingTrends?.map(t => t.count) || [1]))) * 100} 
-                                    className="w-24 h-2" 
-                                  />
-                                  <span className="text-sm font-medium w-8">{trend.count}</span>
-                                </div>
-                              </div>
-                            )) || (
-                              <p className="text-sm text-muted-foreground text-center py-8">No trend data available</p>
-                            )}
-                          </div>
-                        </CardContent>
-                      </AnimatedCard>
-                    </div>
-                  )}
-
-                  {activeTab === 'notifications' && (
-                    <div className="space-y-4">
-                      {notifications.length === 0 ? (
-                        <EmptyState
-                          icon={<Bell className="h-16 w-16 mx-auto text-muted-foreground/50" />}
-                          title="No notifications"
-                          description="You're all caught up! We'll notify you about important updates here."
-                        />
-                      ) : (
-                        notifications.map((notification) => (
-                          <AnimatedCard key={notification.id} className={`bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg ${notification.isRead ? 'opacity-60' : ''}`}>
-                            <CardContent className="p-4">
-                              <div className="flex items-start space-x-3">
-                                {getNotificationIcon(notification.type)}
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium">{notification.title}</h4>
-                                    <span className="text-xs text-muted-foreground">
-                                      {new Date(notification.createdAt).toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                                  {notification.actionUrl && (
-                                    <AnimatedButton 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="mt-3"
-                                      onClick={() => window.location.href = notification.actionUrl!}
-                                    >
-                                      Take Action
-                                    </AnimatedButton>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </AnimatedCard>
-                        ))
-                      )}
-                    </div>
-                  )}
                 </motion.div>
               </div>
             </AnimatedCard>

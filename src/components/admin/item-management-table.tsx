@@ -327,7 +327,7 @@ export default function ItemManagementTable({ className }: ItemManagementTablePr
     <>
     <ItemStatisticsCards items={items} />
     <motion.div 
-      className={`space-y-6 ${className}`}
+      className={`space-y-6 mt-6 ${className}`}
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
