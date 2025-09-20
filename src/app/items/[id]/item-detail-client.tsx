@@ -132,12 +132,7 @@ export function ItemDetailPageClient({ item, userRole }: ItemDetailClientProps) 
                 <QrCode className="h-4 w-4 mr-2" />
                 QR Code
               </AnimatedButton>
-              <AnimatedButton variant="outline" size="sm" asChild>
-                <Link href={`/items/${item.id}/history`}>
-                  <History className="h-4 w-4 mr-2" />
-                  History
-                </Link>
-              </AnimatedButton>
+              
             </motion.div>
           </motion.div>
 

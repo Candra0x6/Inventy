@@ -1049,7 +1049,13 @@ export default function ItemManagementTable({ className }: ItemManagementTablePr
                   {selectedItem.barcode && (
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Barcode</label>
-                      <p className="font-mono text-sm">{selectedItem.barcode}</p>
+                      <Image 
+                        src={selectedItem.barcode}
+                        alt={`${selectedItem.name} Barcode`}
+                        width={100}
+                        height={100}
+                        className="w-full h-32 rounded-lg object-cover border border-border/50"
+                      />
                     </div>
                   )}
                   {selectedItem.value && (
