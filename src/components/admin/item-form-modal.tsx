@@ -267,11 +267,16 @@ export default function ItemFormModal({
         }, 200)
 
         const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
+        const fileName = `original-${Date.now()}-${Math.random()}.${fileExt}`
         
         const { data, error } = await supabase.storage
           .from('item-images')
-          .upload(fileName, file)
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type,
+            duplex: 'half' as const
+          })
 
         clearInterval(progressInterval)
         setImageUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
