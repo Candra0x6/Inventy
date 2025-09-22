@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { ItemCondition, ItemStatus } from '@prisma/client'
 import Image from 'next/image'
+import { supabase } from '@/lib/supabase/client'
 
 interface ItemFormModalProps {
   isOpen: boolean
@@ -92,6 +93,7 @@ export default function ItemFormModal({
   const [tagInput, setTagInput] = useState('')
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
   const [imageUploadProgress, setImageUploadProgress] = useState<{ [key: string]: number }>({})
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
 
@@ -228,49 +230,86 @@ export default function ItemFormModal({
   }
 
   // Handle image upload
-  const handleImageUpload = async (files: FileList) => {
-    const validFiles = Array.from(files).filter(file => {
-      const isValidType = file.type.startsWith('image/')
-      const isValidSize = file.size <= 5 * 1024 * 1024 // 5MB
-      return isValidType && isValidSize
-    })
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
 
-    if (validFiles.length !== files.length) {
-      setErrors(prev => ({ 
-        ...prev, 
-        images: 'Some files were skipped. Only image files under 5MB are allowed.' 
-      }))
+    const newImageUrls = await uploadImages(files)
+    if (newImageUrls.length > 0) {
+      handleInputChange('images', [...formData.images, ...newImageUrls])
     }
+  }
 
-    // Upload files (simplified - in real implementation, you'd upload to a storage service)
-    const uploadPromises = validFiles.map(async (file, index) => {
-      const fileId = `${Date.now()}-${index}`
-      setImageUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+  const uploadImages = async (files: FileList) => {
+    if (!files || files.length === 0) return []
 
-      // Simulate upload progress
-      for (let progress = 0; progress <= 100; progress += 20) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-        setImageUploadProgress(prev => ({ ...prev, [fileId]: progress }))
-      }
-
-      // Create object URL for preview (in real app, return the uploaded URL)
-      const imageUrl = URL.createObjectURL(file)
-      setImageUploadProgress(prev => {
-        const newProgress = { ...prev }
-        delete newProgress[fileId]
-        return newProgress
-      })
-      
-      return imageUrl
-    })
+    setUploadingImages(true)
+    const uploadedUrls: string[] = []
+    const progressMap: { [key: string]: number } = {}
 
     try {
-      const uploadedUrls = await Promise.all(uploadPromises)
-      handleInputChange('images', [...formData.images, ...uploadedUrls])
-      setErrors(prev => ({ ...prev, images: undefined }))
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileId = `${Date.now()}-${i}-${Math.random()}`
+        progressMap[fileId] = 0
+        setImageUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setImageUploadProgress(prev => {
+            const currentProgress = prev[fileId] || 0
+            if (currentProgress >= 90) {
+              clearInterval(progressInterval)
+              return prev
+            }
+            return { ...prev, [fileId]: Math.min(currentProgress + Math.random() * 20, 90) }
+          })
+        }, 200)
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
+        
+        const { data, error } = await supabase.storage
+          .from('item-images')
+          .upload(fileName, file)
+
+        clearInterval(progressInterval)
+        setImageUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+
+        if (error) {
+          console.error('Upload error:', error)
+          setImageUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+          continue
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('item-images')
+          .getPublicUrl(data.path)
+
+        if (urlData?.publicUrl) {
+          uploadedUrls.push(urlData.publicUrl)
+        }
+
+        // Clean up progress after a delay
+        setTimeout(() => {
+          setImageUploadProgress(prev => {
+            const newProgress = { ...prev }
+            delete newProgress[fileId]
+            return newProgress
+          })
+        }, 1000)
+      }
+
+      return uploadedUrls
     } catch (error) {
-      console.error('Failed to upload images:', error)
-      setErrors(prev => ({ ...prev, images: 'Failed to upload images. Please try again.' }))
+      console.error('Error uploading images:', error)
+      return []
+    } finally {
+      setUploadingImages(false)
     }
   }
 
@@ -557,7 +596,7 @@ export default function ItemFormModal({
                   id="image-upload"
                   multiple
                   accept="image/*"
-                  onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                  onChange={handleImageUpload}
                   className="hidden"
                 />
                 <label htmlFor="image-upload" className="cursor-pointer">
@@ -566,7 +605,9 @@ export default function ItemFormModal({
                       <Upload className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Click to upload images</p>
+                      <p className="text-sm font-medium">
+                        {uploadingImages ? 'Uploading...' : 'Click to upload images'}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Supports multiple files up to 5MB each
                       </p>
@@ -584,13 +625,24 @@ export default function ItemFormModal({
 
               {/* Upload Progress */}
               {Object.keys(imageUploadProgress).length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-foreground">Upload Progress</p>
                   {Object.entries(imageUploadProgress).map(([fileId, progress]) => (
-                    <div key={fileId} className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%` }}
-                      />
+                    <div key={fileId} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">
+                          File {parseInt(fileId.split('-')[1]) + 1}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.round(progress)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
