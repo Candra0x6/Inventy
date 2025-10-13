@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { UserRole } from '@prisma/client'
 import { logoutMiddleware, isLogoutRedirect } from '@/lib/auth/logout-middleware'
+import path from 'path'
 
 // Helper function to clean duplicate NextAuth cookies in middleware
 function cleanupDuplicateCookies(request: NextRequest, response: NextResponse) {
@@ -100,6 +101,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/auth/') ||
+    pathname === '/' ||
     pathname.includes('.')
   ) {
     return NextResponse.next()
