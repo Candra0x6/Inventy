@@ -221,12 +221,12 @@ export default function ReturnApprovalWorkflow() {
 
   return (
     <motion.div 
-      className="max-w-7xl mx-auto p-6 space-y-6"
+      className="max-w-7xl mx-auto space-y-6"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
     >
-      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+      <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg w-full">
         <motion.div variants={fadeInUp} className="p-6 border-b border-border/50">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex items-center space-x-4">

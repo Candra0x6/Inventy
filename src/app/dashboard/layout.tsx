@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { fadeInUp, staggerContainer } from '@/lib/animations';
 import { signOut, useSession } from 'next-auth/react';
 import { DropdownMenu } from '@/components/navigation/dropdown-menu';
+import { customSignOut } from '@/lib/auth/custom-signout';
 
 const adminNavTabs = [
     { path: '/dashboard', label: 'Main', icon: <HomeIcon className="w-4 h-4" /> },
@@ -16,7 +17,6 @@ const adminNavTabs = [
   { path: '/dashboard/items', label: 'Items', icon: <Package className="w-4 h-4" /> },
   { path: '/dashboard/returns', label: 'Returns', icon: <CheckCircle className="w-4 h-4" /> },
   { path: '/dashboard/late-tracking', label: 'Late Tracking', icon: <Clock className="w-4 h-4" /> },
-  { path: '/dashboard/damage-management', label: 'Damage', icon: <AlertTriangle className="w-4 h-4" /> },
   { path: '/dashboard/analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
@@ -44,6 +44,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     
   }, [session, status, router])
+
 
   if (status === 'loading') {
     return (
@@ -131,7 +132,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   items={[
                     { 
                       label: 'Log Out',
-                      onClick: () => { signOut() },
+                      onClick: () => { 
+                        signOut({ callbackUrl: '/auth/login' })
+                        customSignOut({ callbackUrl: '/auth/login' })
+                       },
                       href: '/auth/logout',
                       icon: <LogOut className="h-4 w-4" />,
                       description: 'Sign out of your account'

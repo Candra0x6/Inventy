@@ -191,7 +191,7 @@ export default function ReservationStatsOverview({ className }: ReservationStats
 
   return (
     <motion.div 
-      className={`space-y-8 ${className}`}
+      className={`space-y-8 ${className} mb-5`}
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
@@ -286,62 +286,10 @@ export default function ReservationStatsOverview({ className }: ReservationStats
         </motion.div>
       )}
 
-      {/* Performance Metrics */}
-      <motion.div variants={fadeInUp}>
-        <AnimatedCard className="p-6 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-sm rounded-xl border border-primary/20">
-              <Target className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold">Performance Metrics</h3>
-          </div>
-          
-          <div className="space-y-6">
-            <motion.div whileHover={{ scale: 1.01 }} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Approval Rate</span>
-                <span className={`text-lg font-semibold ${
-                  data.trends.approvalRate >= 80 ? 'text-green-600' :
-                  data.trends.approvalRate >= 60 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {data.trends.approvalRate}%
-                </span>
-              </div>
-              <div className="w-full bg-muted/50 rounded-full h-3">
-                <motion.div
-                  className={`h-3 rounded-full ${
-                    data.trends.approvalRate >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' :
-                    data.trends.approvalRate >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'
-                  }`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${data.trends.approvalRate}%` }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                />
-              </div>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.01 }} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Utilization Rate</span>
-                <span className="text-lg font-semibold text-blue-600">{data.trends.utilizationRate}%</span>
-              </div>
-              <div className="w-full bg-muted/50 rounded-full h-3">
-                <motion.div
-                  className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${data.trends.utilizationRate}%` }}
-                  transition={{ duration: 1, delay: 0.7 }}
-                />
-              </div>
-            </motion.div>
-          </div>
-        </AnimatedCard>
-      </motion.div>
-
       {/* Popular Items */}
       {data.insights.popularItems.length > 0 && (
         <motion.div variants={fadeInUp}>
-          <AnimatedCard className="p-6 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
+          <AnimatedCard className="p-6 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg mb-5">
             <div className="flex items-center space-x-3 mb-6">
               <div className="p-2 bg-gradient-to-br from-yellow-100 to-yellow-50 dark:from-yellow-900/30 dark:to-yellow-800/20 rounded-xl">
                 <Award className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />

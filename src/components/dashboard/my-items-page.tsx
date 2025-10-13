@@ -103,14 +103,32 @@ export default function MyItemsPage() {
       const response = await fetch(`/api/reservations/${returnDialog.item!.reservation.id}/return`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId: returnDialog.item!.item.id })
+        body: JSON.stringify({ 
+          itemId: returnDialog.item!.item.id,
+          conditionOnReturn: 'GOOD',
+          notes: 'Returned via dashboard'
+        })
       })
+
+      const data = await response.json()
+      
       if (response.ok) {
+        const message = data.autoApproved 
+          ? 'Item returned successfully!'
+          : 'Return request submitted and pending approval.'
+        
+        console.log(message)
+        
         await fetchBorrowedItems()
         setReturnDialog({ isOpen: false, item: null, loading: false })
+      } else {
+        console.error('Return failed:', data.error)
+        alert(data.error || 'Failed to return item. Please try again.')
+        setReturnDialog(prev => ({ ...prev, loading: false }))
       }
     } catch (error) {
       console.error('Error returning item:', error)
+      alert('Network error. Please try again.')
       setReturnDialog(prev => ({ ...prev, loading: false }))
     }
   }

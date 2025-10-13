@@ -127,14 +127,40 @@ export default function BorrowingDashboard() {
       const response = await fetch(`/api/reservations/${returnDialog.item!.reservation.id}/return`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId: returnDialog.item!.item.id })
+        body: JSON.stringify({ 
+          itemId: returnDialog.item!.item.id,
+          conditionOnReturn: 'GOOD', // Default to GOOD condition
+          notes: 'Returned via dashboard'
+        })
       })
+      
+      const data = await response.json()
+      
       if (response.ok) {
+        // Show success message based on whether return was auto-approved
+        const message = data.autoApproved 
+          ? 'Item returned successfully!'
+          : 'Return request submitted and pending approval.'
+        
+        console.log(message)
+        
         await fetchDashboardData()
         setReturnDialog({ isOpen: false, item: null, loading: false })
+      } else {
+        console.error('Return failed:', data.error)
+        // Handle specific error cases
+        if (response.status === 400) {
+          alert(data.error || 'Cannot process return at this time')
+        } else if (response.status === 403) {
+          alert('You do not have permission to return this item')
+        } else {
+          alert('Failed to return item. Please try again.')
+        }
+        setReturnDialog(prev => ({ ...prev, loading: false }))
       }
     } catch (error) {
       console.error('Error returning item:', error)
+      alert('Network error. Please check your connection and try again.')
       setReturnDialog(prev => ({ ...prev, loading: false }))
     }
   }
@@ -199,56 +225,7 @@ export default function BorrowingDashboard() {
                   Manage your borrowed items and track usage efficiently
                 </p>
               </motion.div>
-              
-              <motion.div variants={fadeInUp} className="flex items-center gap-2">
-                {/* Quick Actions Dropdown */}
-                <DropdownMenu
-                  trigger={<span>Quick Actions</span>}
-                  items={[
-                    { 
-                      label: 'Browse Items', 
-                      href: '/items',
-                      icon: <Search className="h-4 w-4" />,
-                      description: 'Find new items to borrow'
-                    },
-                    { 
-                      label: 'My Reservations', 
-                      href: '/reservations',
-                      icon: <Calendar className="h-4 w-4" />,
-                      description: 'View upcoming reservations'
-                    },
-                    { 
-                      label: 'QR Scanner', 
-                      href: '/items/scan',
-                      icon: <Package className="h-4 w-4" />,
-                      description: 'Scan item QR codes'
-                    }
-                  ]}
-                />
-
-                <ThemeToggle />
-                
-                {/* Mobile Menu */}
-                <MobileMenu 
-                  isOpen={mobileMenuOpen} 
-                  onToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
-                  <nav className="space-y-3">
-                    <Link href="/items" className="block py-2 text-sm font-medium hover:text-primary transition-colors">
-                      Browse Items
-                    </Link>
-                    <Link href="/reservations" className="block py-2 text-sm font-medium hover:text-primary transition-colors">
-                      My Reservations
-                    </Link>
-                    <Link href="/profile" className="block py-2 text-sm font-medium hover:text-primary transition-colors">
-                      Profile
-                    </Link>
-                    <Link href="/items/scan" className="block py-2 text-sm font-medium hover:text-primary transition-colors">
-                      QR Scanner
-                    </Link>
-                  </nav>
-                </MobileMenu>
-              </motion.div>
+        
             </motion.div>
           </div>
         </div>
@@ -341,52 +318,7 @@ export default function BorrowingDashboard() {
            
                       {/* Quick Actions & Recent Activity */}
                       <div className="lg:col-span-2 space-y-6">
-                        {/* Quick Actions */}
-                        <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
-                          <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                              <Settings className="h-5 w-5" />
-                              <span>Quick Actions</span>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                              <AnimatedButton 
-                                variant="outline" 
-                                className="h-20 flex-col space-y-2"
-                                onClick={() => window.location.href = '/items'}
-                              >
-                                <Search className="h-6 w-6" />
-                                <span className="text-xs">Browse Items</span>
-                              </AnimatedButton>
-                              <AnimatedButton 
-                                variant="outline" 
-                                className="h-20 flex-col space-y-2"
-                                onClick={() => window.location.href = '/reservations'}
-                              >
-                                <Calendar className="h-6 w-6" />
-                                <span className="text-xs">My Reservations</span>
-                              </AnimatedButton>
-                              <AnimatedButton 
-                                variant="outline" 
-                                className="h-20 flex-col space-y-2"
-                                onClick={() => window.location.href = '/profile'}
-                              >
-                                <User className="h-6 w-6" />
-                                <span className="text-xs">Profile</span>
-                              </AnimatedButton>
-                              <AnimatedButton 
-                                variant="outline" 
-                                className="h-20 flex-col space-y-2"
-                                onClick={() => window.location.href = '/items/scan'}
-                              >
-                                <Package className="h-6 w-6" />
-                                <span className="text-xs">QR Scanner</span>
-                              </AnimatedButton>
-                            </div>
-                          </CardContent>
-                        </AnimatedCard>
-
+                    
                         {/* Recent Borrowed Items */}
                         <AnimatedCard className="bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg">
                           <CardHeader>

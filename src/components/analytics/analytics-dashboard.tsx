@@ -266,12 +266,12 @@ export default function AnalyticsDashboard({ className }: AnalyticsDashboardProp
 
   return (
     <motion.div 
-      className={`min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6 lg:p-8 ${className}`}
+      className={`min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full ${className}`}
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
     >
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className=" w-full mx-auto space-y-8 " >
         {/* Analytics Menu */}
         <AnalyticsMenu
           activeType={activeType}

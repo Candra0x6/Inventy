@@ -17,6 +17,8 @@ const createReservationSchema = z.object({
   ),
   purpose: z.string().optional(),
   notes: z.string().optional(),
+  loanLetterUrl: z.string().optional(),
+  loanLetterFileName: z.string().optional(),
 })
 
 // Schema for updating reservations (used in individual reservation routes)
@@ -248,6 +250,9 @@ export async function POST(request: NextRequest) {
         purpose: validatedData.purpose,
         notes: validatedData.notes,
         status: 'PENDING',
+        loanLetterUrl: validatedData.loanLetterUrl,
+        loanLetterFileName: validatedData.loanLetterFileName,
+        loanLetterUploadedAt: validatedData.loanLetterUrl ? new Date() : null,
       },
       include: {
         item: {
@@ -282,7 +287,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to create reservation' },
+      { error: 'Failed to create reservation', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

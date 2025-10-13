@@ -214,6 +214,9 @@ model Reservation {
   rejectionReason  String?           @map("rejection_reason")
   pickupConfirmed  Boolean           @default(false) @map("pickup_confirmed")
   pickupConfirmedAt DateTime?        @map("pickup_confirmed_at")
+  loanLetterUrl    String?           @map("loan_letter_url") // URL to uploaded loan letter file
+  loanLetterFileName String?         @map("loan_letter_file_name") // Original filename
+  loanLetterUploadedAt DateTime?     @map("loan_letter_uploaded_at") // When the file was uploaded
   notes            String?
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")

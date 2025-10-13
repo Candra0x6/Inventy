@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { UserRole } from '@prisma/client'
+import { logoutMiddleware, isLogoutRedirect } from '@/lib/auth/logout-middleware'
 
 // Helper function to clean duplicate NextAuth cookies in middleware
 function cleanupDuplicateCookies(request: NextRequest, response: NextResponse) {
   const cookies = request.cookies
   const sessionTokens = []
+  const allNextAuthCookies = new Set<string>()
   
-  // Find all session tokens
+  // Find all NextAuth-related cookies
   for (const [name, value] of cookies) {
-    if (name === 'next-auth.session-token') {
-      sessionTokens.push(value.value)
+    if (name.includes('next-auth')) {
+      allNextAuthCookies.add(name)
+      if (name === 'next-auth.session-token') {
+        sessionTokens.push(value.value)
+      }
     }
   }
   
@@ -31,6 +36,22 @@ function cleanupDuplicateCookies(request: NextRequest, response: NextResponse) {
       })
     }
   }
+  
+  // Clean up any orphaned NextAuth cookies
+  const validCookieNames = [
+    'next-auth.session-token',
+    'next-auth.csrf-token',
+    'next-auth.callback-url',
+    '__Secure-next-auth.session-token',
+    '__Host-next-auth.csrf-token'
+  ]
+  
+  allNextAuthCookies.forEach(cookieName => {
+    if (!validCookieNames.includes(cookieName)) {
+      console.log(`Cleaning up orphaned cookie: ${cookieName}`)
+      response.cookies.delete(cookieName)
+    }
+  })
   
   return response
 }
@@ -69,6 +90,11 @@ function getRequiredRoles(pathname: string): readonly UserRole[] | null {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
+  // Handle logout-specific middleware first
+  if (pathname === '/auth/logout' || pathname.includes('/api/auth/logout')) {
+    return logoutMiddleware(request)
+  }
+
   // Skip middleware for API routes, static files, and auth pages
   if (
     pathname.startsWith('/api/') ||
@@ -77,6 +103,13 @@ export async function middleware(request: NextRequest) {
     pathname.includes('.')
   ) {
     return NextResponse.next()
+  }
+
+  // Check if this is a logout redirect and prevent session recreation
+  if (isLogoutRedirect(request)) {
+    const loginUrl = new URL('/auth/login', request.url)
+    loginUrl.searchParams.set('message', 'signed-out')
+    return NextResponse.redirect(loginUrl)
   }
 
   // Get the user's session token

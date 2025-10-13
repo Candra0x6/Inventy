@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions } from "next-auth"
+    import NextAuth, { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -61,6 +61,18 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -140,6 +152,26 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return true
+    },
+  },
+  events: {
+    async signOut(message) {
+      // Clean up any additional cookies on sign out
+      console.log("User signed out", message)
+      
+      // For credentials-based auth, ensure database session cleanup if any exists
+      if (message?.token?.sub) {
+        try {
+          // Delete any database sessions for this user
+          await prisma.session.deleteMany({
+            where: {
+              userId: message.token.sub
+            }
+          })
+        } catch (error) {
+          console.error("Database session cleanup error:", error)
+        }
+      }
     },
   },
   pages: {

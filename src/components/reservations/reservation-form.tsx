@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { motion } from 'framer-motion'
 import { AnimatedButton } from '@/components/ui/animated-button'
@@ -8,7 +8,9 @@ import { AnimatedCard } from '@/components/ui/animated-card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { LoanLetterUpload } from './loan-letter-upload'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
+import { uploadFileToSupabase, FileUploadResult, getFileTypeIcon, formatFileSize } from '@/lib/supabase/file-upload'
 import { z } from 'zod'
 import { 
   Calendar, 
@@ -17,7 +19,9 @@ import {
   CheckCircle2, 
   AlertTriangle,
   User,
-  Loader2
+  Loader2,
+  Upload,
+  X
 } from 'lucide-react'
 
 const reservationSchema = z.object({
@@ -25,6 +29,8 @@ const reservationSchema = z.object({
   endDate: z.string().min(1, 'End date is required'),
   purpose: z.string().optional(),
   notes: z.string().optional(),
+  loanLetterUrl: z.string().optional(),
+  loanLetterFileName: z.string().optional(),
 }).refine(
   (data) => {
     const start = new Date(data.startDate)
@@ -50,14 +56,24 @@ const reservationSchema = z.object({
 
 type ReservationFormData = z.infer<typeof reservationSchema>
 
+interface LoanLetterData {
+  url: string
+  fileName: string
+}
+
 interface ReservationFormProps {
   itemId: string
   itemName: string
   initialStartDate?: string
   initialEndDate?: string
+  reservationId?: string // For editing existing reservations
+  existingLoanLetter?: LoanLetterData
   onSubmit: (data: ReservationFormData) => Promise<void>
+  onLoanLetterUploaded?: (data: LoanLetterData) => void
+  onLoanLetterDeleted?: () => void
   onCancel?: () => void
   isSubmitting?: boolean
+  showLoanLetterUpload?: boolean
   className?: string
 }
 
@@ -78,13 +94,22 @@ export function ReservationForm({
   itemName,
   initialStartDate,
   initialEndDate,
+  reservationId,
+  existingLoanLetter,
   onSubmit,
+  onLoanLetterUploaded,
+  onLoanLetterDeleted,
   onCancel,
   isSubmitting = false,
+  showLoanLetterUpload = false,
   className = '',
 }: ReservationFormProps) {
   const [availabilityCheck, setAvailabilityCheck] = useState<AvailabilityResult | null>(null)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
+  const [loanLetterData, setLoanLetterData] = useState<LoanLetterData | null>(existingLoanLetter || null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const {
     register,
@@ -92,6 +117,7 @@ export function ReservationForm({
     watch,
     formState: { errors },
     setError,
+    reset,
   } = useForm<ReservationFormData>({
     defaultValues: {
       startDate: initialStartDate || '',
@@ -100,6 +126,18 @@ export function ReservationForm({
       notes: '',
     },
   })
+
+  // Update form values when props change
+  useEffect(() => {
+    reset({
+      startDate: initialStartDate || '',
+      endDate: initialEndDate || '',
+      purpose: '',
+      notes: '',
+    })
+    // Clear availability check when dates change from props
+    setAvailabilityCheck(null)
+  }, [initialStartDate, initialEndDate, reset])
 
   const startDate = watch('startDate')
   const endDate = watch('endDate')
@@ -137,6 +175,61 @@ export function ReservationForm({
     }
   }
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setUploadError(null)
+    }
+  }
+
+  const uploadFile = async (): Promise<{ url: string; fileName: string } | null> => {
+    if (!selectedFile) return null
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const options = {
+        bucket: 'loan-letters',
+        folder: 'temp-uploads',
+        allowedTypes: [
+          'application/pdf',
+          'image/jpeg',
+          'image/jpg', 
+          'image/png',
+          'image/webp',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ],
+        maxSizeInBytes: 10 * 1024 * 1024 // 10MB
+      }
+
+      const result = await uploadFileToSupabase(selectedFile, options)
+      
+      if (!result.success) {
+        setUploadError(result.error || 'Upload failed')
+        return null
+      }
+
+      return {
+        url: result.url!,
+        fileName: result.fileName!
+      }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed')
+      return null
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removeFile = () => {
+    setSelectedFile(null)
+    setUploadError(null)
+    setLoanLetterData(null)
+  }
+
   const handleFormSubmit = async (data: ReservationFormData) => {
     try {
       // Validate the form data
@@ -149,7 +242,50 @@ export function ReservationForm({
         return
       }
 
-      await onSubmit(validatedData)
+      let fileData = null
+      
+      // Upload file if selected
+      if (selectedFile) {
+        fileData = await uploadFile()
+        if (!fileData) {
+          // Upload failed, error is already set
+          return
+        }
+      }
+
+      // Prepare reservation data with file info
+      const reservationData = {
+        ...validatedData,
+        itemId,
+        loanLetterUrl: fileData?.url || loanLetterData?.url,
+        loanLetterFileName: fileData?.fileName || loanLetterData?.fileName,
+      }
+
+      // Submit to API
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reservationData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create reservation')
+      }
+
+      const result = await response.json()
+    
+      // Update loan letter data if file was uploaded
+      if (fileData) {
+        setLoanLetterData(fileData)
+        if (onLoanLetterUploaded) {
+          onLoanLetterUploaded(fileData)
+        }
+      }
+      window.location.reload() // Reload to reflect changes
+
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.issues.forEach((err) => {
@@ -162,6 +298,7 @@ export function ReservationForm({
         })
       } else {
         console.error('Error submitting reservation:', error)
+        setUploadError(error instanceof Error ? error.message : 'Failed to create reservation')
       }
     }
   }
@@ -176,6 +313,17 @@ export function ReservationForm({
   const today = formatDateForInput(new Date())
   const maxDate = formatDateForInput(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)) // 1 year from now
 
+  const handleLoanLetterUploaded = (data: LoanLetterData) => {
+    setLoanLetterData(data)
+    onLoanLetterUploaded?.(data)
+  }
+
+  const handleLoanLetterDeleted = () => {
+    setLoanLetterData(null)
+    onLoanLetterDeleted?.()
+  }
+
+  console.log("Initial Dates:", initialStartDate, "End Date:", initialEndDate)
   return (
     <AnimatedCard className={`p-8 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm border border-border/50 shadow-lg ${className}`}>
       <motion.div
@@ -288,6 +436,106 @@ export function ReservationForm({
               {...register('notes')}
             />
           </motion.div>
+
+          {/* File Upload Section */}
+          <motion.div variants={fadeInUp}>
+            <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+              <Upload className="h-4 w-4" />
+              Loan Letter 
+            </Label>
+            
+            {!selectedFile && !loanLetterData ? (
+              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors">
+                <input
+                  type="file"
+                  id="loan-letter"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="loan-letter"
+                  className="cursor-pointer flex flex-col items-center gap-3"
+                >
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Upload loan letter</p>
+                    <p className="text-sm text-muted-foreground">
+                      PDF, DOC, DOCX, or image files up to 10MB
+                    </p>
+                  </div>
+                </label>
+              </div>
+            ) : (
+              <div className="bg-muted/30 rounded-xl p-4 border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {selectedFile 
+                        ? getFileTypeIcon(selectedFile.name) 
+                        : getFileTypeIcon(loanLetterData?.fileName || '')
+                      }
+                    </span>
+                    <div>
+                      <p className="font-medium">
+                        {selectedFile?.name || loanLetterData?.fileName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedFile 
+                          ? formatFileSize(selectedFile.size)
+                          : 'Uploaded'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <AnimatedButton
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={removeFile}
+                    disabled={uploading}
+                  >
+                    <X className="h-4 w-4" />
+                  </AnimatedButton>
+                </div>
+                
+                {uploading && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Uploading file...
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {uploadError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 flex items-center gap-2 text-sm text-red-600"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                {uploadError}
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Loan Letter Upload */}
+          {reservationId && (
+            <motion.div variants={fadeInUp}>
+              <LoanLetterUpload
+                reservationId={reservationId}
+                existingFile={loanLetterData ? {
+                  url: loanLetterData.url,
+                  fileName: loanLetterData.fileName,
+                  uploadedAt: new Date().toISOString()
+                } : undefined}
+                onFileUploaded={handleLoanLetterUploaded}
+                onFileDeleted={handleLoanLetterDeleted}
+                disabled={isSubmitting}
+              />
+            </motion.div>
+          )}
 
           {/* Availability Check Button */}
           {startDate && endDate && (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth/auth-context'
-import { signOut } from 'next-auth/react'
+import { customSignOut } from '@/lib/auth/custom-signout'
 import { 
   Package, 
   Clock, 
@@ -133,7 +133,7 @@ function DashboardContent() {
               </div>
               
               <button
-                onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                onClick={() => customSignOut({ callbackUrl: '/auth/login' })}
                 className="text-sm text-gray-500 hover:text-gray-700"
               >
                 Sign out

@@ -9,6 +9,7 @@ import { AnimatedButton } from '@/components/ui/animated-button'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { LoanLetterUpload } from '@/components/reservations/loan-letter-upload'
 import { toast } from 'sonner'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { 
@@ -33,6 +34,9 @@ interface ReservationWithDetails {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
   purpose?: string
   notes?: string
+  loanLetterUrl?: string
+  loanLetterFileName?: string
+  loanLetterUploadedAt?: string
   createdAt: string
   updatedAt: string
   item: {
@@ -192,6 +196,32 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
       toast.error(error instanceof Error ? error.message : 'Failed to cancel reservation')
     } finally {
       setUpdating(false)
+    }
+  }
+
+  // Handle loan letter upload
+  const handleLoanLetterUploaded = (data: { url: string; fileName: string }) => {
+    if (reservation) {
+      setReservation({
+        ...reservation,
+        loanLetterUrl: data.url,
+        loanLetterFileName: data.fileName,
+        loanLetterUploadedAt: new Date().toISOString()
+      })
+      toast.success('Loan letter uploaded successfully!')
+    }
+  }
+
+  // Handle loan letter deletion
+  const handleLoanLetterDeleted = () => {
+    if (reservation) {
+      setReservation({
+        ...reservation,
+        loanLetterUrl: undefined,
+        loanLetterFileName: undefined,
+        loanLetterUploadedAt: undefined
+      })
+      toast.success('Loan letter deleted successfully!')
     }
   }
 
@@ -521,6 +551,58 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
                         <p className="leading-relaxed">{reservation.notes}</p>
                       </div>
                     </div>
+                  )}
+
+                  {/* Loan Letter Section */}
+                  {reservation.loanLetterUrl ? (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Loan Letter
+                      </Label>
+                      <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">📄</span>
+                            <div>
+                              <p className="font-medium text-emerald-800 dark:text-emerald-300">
+                                {reservation.loanLetterFileName || 'Loan Letter'}
+                              </p>
+                              {reservation.loanLetterUploadedAt && (
+                                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                                  Uploaded {new Date(reservation.loanLetterUploadedAt).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <AnimatedButton
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(reservation.loanLetterUrl, '_blank')}
+                            className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900"
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            View Document
+                          </AnimatedButton>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Loan Letter Upload for owners or when no file exists */
+                    canManage() && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Loan Letter Upload
+                        </Label>
+                        <LoanLetterUpload
+                          reservationId={reservation.id}
+                          onFileUploaded={handleLoanLetterUploaded}
+                          onFileDeleted={handleLoanLetterDeleted}
+                          disabled={updating || !['PENDING', 'APPROVED', 'ACTIVE'].includes(reservation.status)}
+                        />
+                      </div>
+                    )
                   )}
                 </motion.div>
               </motion.div>

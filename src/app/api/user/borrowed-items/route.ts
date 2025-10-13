@@ -13,32 +13,41 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
+    const statusFilter = searchParams.get('status')
     
-    // Build where condition
-    const where: {
-      userId: string
-      status?: string | { lt: Date }
-      endDate?: { lt: Date }
-    } = {
-      userId
+    // Build where condition - only get ACTIVE or PENDING reservations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let whereCondition: any = {
+      userId,
+      status: {
+        in: ['ACTIVE', 'PENDING']
+      }
     }
     
-    if (status && status !== 'all') {
-      if (status === 'overdue') {
-        where.status = 'ACTIVE'
-        where.endDate = {
+    // Apply additional filters if requested
+    if (statusFilter === 'overdue') {
+      whereCondition = {
+        userId,
+        status: 'ACTIVE',
+        endDate: {
           lt: new Date()
         }
-      } else {
-        where.status = status.toUpperCase()
+      }
+    } else if (statusFilter === 'active') {
+      whereCondition = {
+        userId,
+        status: 'ACTIVE'
+      }
+    } else if (statusFilter === 'pending') {
+      whereCondition = {
+        userId,
+        status: 'PENDING'
       }
     }
 
-    // Get user's borrowed items
+    // Get user's borrowed items (only ACTIVE and PENDING)
     const reservations = await prisma.reservation.findMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: where as any,
+      where: whereCondition,
       include: {
         item: true
       },
@@ -50,7 +59,6 @@ export async function GET(request: NextRequest) {
     const borrowedItems = reservations.map(reservation => {
       const now = new Date()
       const dueDate = new Date(reservation.endDate)
-      const borrowDate = new Date(reservation.startDate)
       
       // Calculate days remaining (can be negative for overdue)
       const daysRemaining = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))

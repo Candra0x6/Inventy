@@ -97,7 +97,7 @@ export default function AnalyticsMenu({
 
   return (
     <motion.div 
-      className="bg-gradient-to-br from-card via-card/95 to-muted/20 backdrop-blur-xl border border-border/40 rounded-2xl shadow-2xl shadow-primary/5"
+      className="bg-gradient-to-br from-card via-card/95 to-muted/20 backdrop-blur-xl border border-border/40 rounded-2xl shadow-2xl shadow-primary/5 w-full"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
@@ -106,7 +106,7 @@ export default function AnalyticsMenu({
       <motion.div 
         variants={fadeInUp}
         className="p-8 border-b border-border/30 bg-gradient-to-r from-transparent to-primary/5"
-      >
+      >2
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
           {/* Title and Description */}
           <div className="flex items-center space-x-6">
