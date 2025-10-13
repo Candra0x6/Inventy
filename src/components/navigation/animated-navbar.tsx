@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { Menu, X, Home, Users, BoxIcon } from 'lucide-react'
+import Image from 'next/image'
+import { useTheme } from 'next-themes'
 
 interface NavItem {
   href: string
@@ -24,6 +26,7 @@ interface AnimatedNavbarProps {
 export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
 
   // Hide navbar on dashboard pages
   if (pathname?.startsWith('/dashboard')) {
@@ -51,9 +54,19 @@ export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) 
             transition={{ duration: 0.2 }}
           >
             {logo || (
-              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Inventy
-              </div>
+              theme === 'dark' ?
+              <Image
+                src="/fosti.png"
+                alt="Inventy Logo"
+                width={80}
+                height={80}
+              />  
+              : <Image
+                src="/fosti-black.png"
+                alt="Inventy Logo"
+                width={80}
+                height={80}
+              />  
             )}
           </motion.div>
 

@@ -9,14 +9,11 @@ import {
   Users, 
   Scan,
   ArrowRight,
-  CheckCircle,
-  Star,
-  TrendingUp,
   Bell
 } from 'lucide-react'
-import { AnimatedCard, FeatureCard, StatsCard } from '@/components/ui/animated-card'
+import { AnimatedCard, FeatureCard } from '@/components/ui/animated-card'
 import { AnimatedButton, FloatingActionButton } from '@/components/ui/animated-button'
-import { AnimatedNavbar, defaultNavItems } from '@/components/navigation/animated-navbar'
+import { Footer } from '@/components/navigation/footer'
 import { 
   fadeInUp, 
   staggerContainer, 
@@ -56,33 +53,7 @@ const features = [
   }
 ]
 
-const stats = [
-  { value: "10,000+", label: "Items Managed", change: 23, trend: "up" as const },
-  { value: "99.9%", label: "Uptime", change: 0.1, trend: "up" as const },
-  { value: "500+", label: "Organizations", change: 15, trend: "up" as const },
-  { value: "4.9/5", label: "User Rating", change: 2, trend: "up" as const }
-]
 
-const testimonials = [
-  {
-    avatar: "/api/placeholder/80/80",
-    name: "Sarah Johnson",
-    role: "Operations Manager",
-    content: "Inventy transformed our inventory management. The real-time tracking and analytics have improved our efficiency by 40%."
-  },
-  {
-    avatar: "/api/placeholder/80/80", 
-    name: "Michael Chen",
-    role: "IT Director",
-    content: "The integration was seamless and the team adopted it quickly. Best inventory solution we've implemented."
-  },
-  {
-    avatar: "/api/placeholder/80/80",
-    name: "Emily Rodriguez", 
-    role: "Warehouse Supervisor",
-    content: "The barcode scanning feature alone saved us hours every day. Highly recommend for any growing business."
-  }
-]
 
 export default function Home() {
   return (
@@ -237,6 +208,9 @@ export default function Home() {
           </div>
         </section>
       </motion.main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Floating Action Button */}
       <FloatingActionButton
