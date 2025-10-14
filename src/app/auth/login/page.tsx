@@ -99,7 +99,7 @@ export default function LoginPage() {
       })
 
       console.log("Sign-in result:", result)
-      if (result?.error) {
+      if (!result?.ok) {
         setErrors({ email: "Invalid credentials" })
       } else {
         // Refresh session and redirect
