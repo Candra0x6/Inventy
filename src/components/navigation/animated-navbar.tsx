@@ -54,7 +54,7 @@ export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) 
             transition={{ duration: 0.2 }}
           >
             {logo || (
-              theme === 'dark' ?
+              theme === 'dark' || theme === 'system' ?
               <Image
                 src="/fosti.png"
                 alt="Inventy Logo"
