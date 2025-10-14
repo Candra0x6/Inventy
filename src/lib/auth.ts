@@ -5,6 +5,10 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { validateAuthEnvironment } from "@/lib/env-validation"
+
+// Validate environment variables
+validateAuthEnvironment()
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -13,6 +17,7 @@ const loginSchema = z.object({
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -71,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
       },
     },
   },
