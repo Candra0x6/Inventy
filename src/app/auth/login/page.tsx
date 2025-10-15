@@ -99,7 +99,7 @@ export default function LoginPage() {
       })
       const session =  await getSession()
       console.log("Sign-in result:", result)
-      if (!session?.user.email) {
+      if (result?.status == 200) {
         setErrors({ email: "Invalid credentials" })
       } else {
         // Refresh session and redirect
