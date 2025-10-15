@@ -17,8 +17,7 @@ async function fetchItemData(id: string) {
     redirect('/auth/login')
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-  const response = await fetch(`${baseUrl}/api/items/${id}`, {
+  const response = await fetch(`/api/items/${id}`, {
     cache: 'no-store', // Ensure fresh data
   })
 
