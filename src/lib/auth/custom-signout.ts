@@ -35,6 +35,9 @@ export const customSignOut = async (options?: { callbackUrl?: string }) => {
             { domain: 'localhost', path: '/' },
             { domain: '.localhost', path: '/' },
             { domain: '127.0.0.1', path: '/' },
+            { domain: undefined, path: '/' },
+            { domain: window.location.hostname.split('.').slice(-2).join('.'), path: '/' },
+            { domain: `.${window.location.hostname.split('.').slice(-2).join('.')}`, path: '/' },
             { domain: window.location.hostname, path: '/' },
             { domain: '', path: '/auth' },
             { domain: '', path: '/api' }
