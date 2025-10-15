@@ -1,5 +1,6 @@
   'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Package, 
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 import { AnimatedCard, FeatureCard } from '@/components/ui/animated-card'
 import { AnimatedButton, FloatingActionButton } from '@/components/ui/animated-button'
+import { DemoModal } from '@/components/ui/demo-modal'
 import { Footer } from '@/components/navigation/footer'
 import { LanguageSwitcher } from '@/components/navigation/language-switcher'
 import { 
@@ -59,13 +61,17 @@ const features = [
 
 export default function Home() {
   const t = useTranslations();
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 max-w-5xl mx-auto">
-      {/* Language Switcher - Fixed Position */}
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSwitcher />
-      </div>
+    
+      
+      {/* Demo Modal */}
+      <DemoModal 
+        isOpen={isDemoModalOpen} 
+        onClose={() => setIsDemoModalOpen(false)} 
+      />
       
       {/* Navigation */}
       
@@ -90,12 +96,8 @@ export default function Home() {
                   <br />
                   {t('hero_title_management')}
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  {t('hero_description')}
-                </p>
               </motion.div>
-
-              <motion.div 
+              <motion.div
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
@@ -103,9 +105,15 @@ export default function Home() {
                   {t('cta_get_started')}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </AnimatedButton>
-                <AnimatedButton variant="outline" size="lg" className="text-lg px-8 py-4">
+                <AnimatedButton 
+                  variant="outline" 
+                  size="lg" 
+                  className="text-lg px-8 py-4"
+                  onClick={() => setIsDemoModalOpen(true)}
+                >
                   {t('cta_watch_demo')}
                 </AnimatedButton>
+            
               </motion.div>
 
            
