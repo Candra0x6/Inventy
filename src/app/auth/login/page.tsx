@@ -92,21 +92,12 @@ export default function LoginPage() {
     try {
       const validatedData = loginSchema.parse(formData)
       
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         email: validatedData.email,
         password: validatedData.password,
-        redirect: false,
+        redirect: true,
       })
-      const session =  await getSession()
-      console.log("Sign-in result:", result)
-      if (result?.status == 200) {
-        setErrors({ email: "Invalid credentials" })
-      } else {
-        // Refresh session and redirect
-        await getSession()
-        router.push("/dashboard")
-        router.refresh()
-      }
+     
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Partial<LoginFormData> = {}
