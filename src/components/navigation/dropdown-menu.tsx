@@ -51,7 +51,6 @@ export function DropdownMenu({ trigger, items, className = '', isDropdown = true
                 {items.map((item, index) => (
                   <motion.a
                     key={index}
-                    href={item.href}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}

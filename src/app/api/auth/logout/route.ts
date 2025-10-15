@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production'
     
     // In production, NextAuth uses __Secure- prefix for secure cookies
-    const sessionTokenName = isProduction ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+    const sessionTokenName = isProduction ? '' : ''
     const csrfTokenName = isProduction ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token'
     
     const cookiesToClear = [
-      sessionTokenName,
-      csrfTokenName,
+      "__Secure-next-auth.session-token",
+      "next-auth.session-token",
       'next-auth.callback-url',
       'next-auth.pkce.code_verifier',
       // Also clear the non-prefixed versions just in case
@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
         httpOnly: true, // Must match the httpOnly setting in auth.ts
         sameSite: 'lax',
         secure: isProduction,
-        maxAge: 0
+        maxAge: 0,
+        domain: undefined, // Avoid domain issues by not setting it
       })
     })
 

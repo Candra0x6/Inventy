@@ -79,7 +79,7 @@ export function Footer() {
               viewport={{ once: true }}
             >
               <div className="flex items-center space-x-3">
-               { theme === 'dark' ?
+               { theme === 'dark' || theme == 'system' ?
                             <Image
                               src="/fosti.png"
                               alt="Inventy Logo"
