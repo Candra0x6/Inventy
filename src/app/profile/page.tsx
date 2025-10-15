@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('/api/user/profile')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/profile`)
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
@@ -42,7 +42,7 @@ export default function ProfilePage() {
   const handleSaveProfile = async (data: UserProfileUpdate) => {
     setIsSaving(true)
     try {
-      const response = await fetch('/api/user/profile', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

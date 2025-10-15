@@ -127,7 +127,7 @@ export default function DamageManagementDashboard({ onClose }: DamageManagementD
       if (filters.damageType) params.append('damageType', filters.damageType)
       if (filters.search) params.append('search', filters.search)
 
-      const response = await fetch(`/api/returns/damage?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/damage?${params}`)
       if (!response.ok) throw new Error('Failed to fetch damage reports')
 
       const data = await response.json()
@@ -161,7 +161,7 @@ export default function DamageManagementDashboard({ onClose }: DamageManagementD
         updateData.resolutionDate = new Date().toISOString()
       }
 
-      const response = await fetch(`/api/returns/damage/${reportId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/damage/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -194,7 +194,7 @@ export default function DamageManagementDashboard({ onClose }: DamageManagementD
       if (filters.severity) params.append('severity', filters.severity)
       if (filters.damageType) params.append('damageType', filters.damageType)
 
-      const response = await fetch(`/api/returns/damage/export?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/damage/export?${params}`)
       if (!response.ok) throw new Error('Failed to export reports')
 
       const blob = await response.blob()

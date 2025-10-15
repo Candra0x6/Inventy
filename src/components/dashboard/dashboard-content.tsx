@@ -71,7 +71,7 @@ function DashboardContent() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/items/status')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/status`)
       if (response.ok) {
         const data = await response.json()
         setDashboardData(data)

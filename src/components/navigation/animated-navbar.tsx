@@ -10,6 +10,8 @@ import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { Menu, X, Home, Users, BoxIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useTheme } from 'next-themes'
+import { LanguageSwitcher } from './language-switcher'
+import { useI18n } from '@/lib/i18n-helpers'
 
 interface NavItem {
   href: string
@@ -26,7 +28,7 @@ interface AnimatedNavbarProps {
 export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
 
   // Hide navbar on dashboard pages
   if (pathname?.startsWith('/dashboard')) {
@@ -35,7 +37,6 @@ export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) 
 
   return (
     <div className="flex w-full items-center justify-center mb-20">
-
     <motion.nav
       className={cn(
         "fixed mt-5 top-0 z-50 px-2 w-full border-b border-border/40 bg-background/80 backdrop-blur max-w-5xl self-center supports-[backdrop-filter]:bg-background/60 rounded-full  ",
@@ -305,10 +306,19 @@ export function BottomNavigation({ items, activeIndex, onItemClick, className }:
   )
 }
 
-// Example navigation items
+// Default navigation items with translations
+// Usage: const navItems = getDefaultNavItems(useI18n())
+export function getDefaultNavItems(i18n: ReturnType<typeof useI18n>): NavItem[] {
+  return [
+    { href: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
+    { href: '/items', label: i18n.nav.items, icon: <BoxIcon className="w-4 h-4" /> },
+    { href: '/dashboard', label: i18n.nav.dashboard, icon: <Users className="w-4 h-4" /> },
+  ]
+}
+
+// Deprecated: Use getDefaultNavItems() instead for i18n support
 export const defaultNavItems: NavItem[] = [
   { href: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
   { href: '/items', label: 'Items', icon: <BoxIcon className="w-4 h-4" /> },
   { href: '/dashboard', label: 'Dashboard', icon: <Users className="w-4 h-4" /> },
-
 ]

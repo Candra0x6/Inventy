@@ -36,7 +36,7 @@ export default function MyAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/user/usage-analytics')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/usage-analytics`)
       if (response.ok) {
         const data = await response.json()
         setUsageAnalytics(data)

@@ -84,7 +84,7 @@ export function BarcodeSearch({
     setSearchResult(null)
 
     try {
-      const response = await fetch(`/api/items/barcode?barcode=${encodeURIComponent(barcodeValue)}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/barcode?barcode=${encodeURIComponent(barcodeValue)}`)
       const data = await response.json()
 
       if (response.ok && data.success) {

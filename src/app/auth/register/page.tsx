@@ -40,8 +40,8 @@ export default function RegisterPage() {
 
     try {
       const validatedData = registerSchema.parse(formData)
-      
-      const response = await fetch("/api/auth/register", {
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -85,7 +85,7 @@ export default function ReservationManagementTable({ className }: ReservationMan
           sortOrder
         })
         
-        const response = await fetch(`/api/reservations?${params}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations?${params}`)
         if (!response.ok) {
           throw new Error('Failed to fetch reservations')
         }
@@ -111,7 +111,7 @@ export default function ReservationManagementTable({ className }: ReservationMan
         sortOrder
       })
       
-      const response = await fetch(`/api/reservations?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations?${params}`)
       if (!response.ok) {
         throw new Error('Failed to fetch reservations')
       }
@@ -130,7 +130,7 @@ export default function ReservationManagementTable({ className }: ReservationMan
 
     try {
       setProcessingBulk(true)
-      const response = await fetch('/api/admin/reservations/bulk', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/reservations/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ export default function ReservationManagementTable({ className }: ReservationMan
 
   const handleSingleAction = async (reservationId: string, action: 'approve' | 'reject' | 'cancel') => {
     try {
-      const response = await fetch(`/api/reservations/${reservationId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${reservationId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

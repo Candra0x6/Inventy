@@ -144,7 +144,7 @@ export function LoanLetterUpload({
       formData.append('file', uploadState.file)
       formData.append('reservationId', reservationId)
 
-      const response = await fetch('/api/reservations/loan-letter/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/loan-letter/upload`, {
         method: 'POST',
         body: formData
       })
@@ -182,7 +182,7 @@ export function LoanLetterUpload({
 
     setDeleting(true)
     try {
-      const response = await fetch('/api/reservations/loan-letter/delete', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/loan-letter/delete`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'

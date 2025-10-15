@@ -121,8 +121,8 @@ export default function DamageReportForm({
         const formData = new FormData()
         formData.append('file', file)
         formData.append('type', 'damage-evidence')
-        
-        const response = await fetch('/api/upload', {
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/upload`, {
           method: 'POST',
           body: formData
         })
@@ -166,7 +166,7 @@ export default function DamageReportForm({
         await onSubmit(formData)
       } else {
         // Default API call
-        const response = await fetch('/api/returns/damage', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/damage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -68,7 +68,7 @@ export default function ReputationDisplay({
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/user/reputation-history?userId=${userId}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/reputation-history?userId=${userId}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch reputation history')

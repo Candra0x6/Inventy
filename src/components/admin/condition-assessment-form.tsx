@@ -84,7 +84,7 @@ export default function ConditionAssessmentForm({
   useEffect(() => {
     const fetchReturnData = async () => {
       try {
-        const response = await fetch(`/api/returns/${returnId}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/${returnId}`)
         if (response.ok) {
           const data = await response.json()
           setReturnData(data.return)
@@ -96,7 +96,7 @@ export default function ConditionAssessmentForm({
 
     const fetchTemplates = async () => {
       try {
-        const response = await fetch('/api/assessments/templates')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/assessments/templates`)
         if (response.ok) {
           const data = await response.json()
           setTemplates(data.templates)
@@ -180,8 +180,8 @@ export default function ConditionAssessmentForm({
         staffRecommendation: staffRecommendation || undefined,
         penaltyRecommendation: penaltyRecommendation.amount > 0 ? penaltyRecommendation : undefined
       }
-      
-      const response = await fetch('/api/assessments', {
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/assessments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -63,7 +63,7 @@ export default function ReservationsPage() {
 
     const fetchItem = async () => {
       try {
-        const response = await fetch(`/api/items/${itemId}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/${itemId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch item')
         }
@@ -111,8 +111,8 @@ export default function ReservationsPage() {
 
     try {
       setSubmitting(true)
-      
-      const response = await fetch('/api/reservations', {
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

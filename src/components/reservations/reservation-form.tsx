@@ -262,7 +262,7 @@ export function ReservationForm({
       }
 
       // Submit to API
-      const response = await fetch('/api/reservations', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

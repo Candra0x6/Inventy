@@ -133,8 +133,8 @@ export default function AnalyticsDashboard({ className }: AnalyticsDashboardProp
   const loadTotals = useCallback(async () => {
     try {
       const [borrowingResponse, returningResponse] = await Promise.all([
-        fetch(`/api/analytics/borrowing?timeframe=${timeframe}`),
-        fetch(`/api/analytics/returning?timeframe=${timeframe}`)
+        fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/borrowing?timeframe=${timeframe}`),
+        fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/returning?timeframe=${timeframe}`)
       ])
       
       if (borrowingResponse.ok) {

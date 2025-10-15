@@ -82,7 +82,7 @@ export default function ReturnAnalyticsDashboard({ onClose }: ReturnAnalyticsDas
         timeframe: timeframe
       })
       
-      const response = await fetch(`/api/returns/analytics?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/analytics?${params}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch analytics data')
@@ -112,7 +112,7 @@ export default function ReturnAnalyticsDashboard({ onClose }: ReturnAnalyticsDas
         timeframe: timeframe
       })
       
-      const response = await fetch(`/api/returns/analytics/export?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/analytics/export?${params}`)
       
       if (!response.ok) {
         throw new Error('Failed to export data')

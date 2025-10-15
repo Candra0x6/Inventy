@@ -162,7 +162,7 @@ export default function ItemManagementTable({ className }: ItemManagementTablePr
         ...(conditionFilter !== 'all' && { condition: conditionFilter }),
       })
       
-      const response = await fetch(`/api/items?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items?${params}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch items')
@@ -209,8 +209,8 @@ export default function ItemManagementTable({ className }: ItemManagementTablePr
 
     try {
       setProcessingBulk(true)
-      
-      const response = await fetch('/api/items/bulk', {
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/bulk`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -241,7 +241,7 @@ export default function ItemManagementTable({ className }: ItemManagementTablePr
     if (!selectedItem) return
 
     try {
-      const response = await fetch(`/api/items/${selectedItem.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/${selectedItem.id}`, {
         method: 'DELETE',
       })
 

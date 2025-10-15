@@ -84,7 +84,7 @@ export default function LateReturnTracking() {
           limit: '50'
         })
         
-        const response = await fetch(`/api/returns/overdue?${params}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/overdue?${params}`)
         if (response.ok) {
           const data = await response.json()
           setOverdueReservations(data.overdueReservations)
@@ -110,7 +110,7 @@ export default function LateReturnTracking() {
         limit: '50'
       })
       
-      const response = await fetch(`/api/returns/overdue?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/overdue?${params}`)
       if (response.ok) {
         const data = await response.json()
         setOverdueReservations(data.overdueReservations)
@@ -151,7 +151,7 @@ export default function LateReturnTracking() {
 
     try {
       setNotificationLoading(true)
-      const response = await fetch('/api/returns/overdue', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/overdue`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -82,7 +82,7 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
   useEffect(() => {
     const fetchReservation = async () => {
       try {
-        const response = await fetch(`/api/reservations/${params.id}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${params.id}`)
         if (!response.ok) {
           if (response.status === 404) {
             toast.error('Reservation not found')
@@ -131,7 +131,7 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
     try {
       setUpdating(true)
       
-      const response = await fetch(`/api/reservations/${reservation.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${reservation.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
     try {
       setUpdating(true)
       
-      const response = await fetch(`/api/reservations/${reservation.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${reservation.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ export default function ReservationDetailPage({ params }: ReservationDetailPageP
     try {
       setUpdating(true)
       
-      const response = await fetch(`/api/reservations/${reservation.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${reservation.id}`, {
         method: 'DELETE',
       })
 

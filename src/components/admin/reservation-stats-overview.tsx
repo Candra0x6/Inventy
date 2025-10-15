@@ -68,7 +68,7 @@ export default function ReservationStatsOverview({ className }: ReservationStats
     const fetchStats = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/admin/reservations/stats')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/reservations/stats`)
         if (!response.ok) {
           throw new Error('Failed to fetch statistics')
         }

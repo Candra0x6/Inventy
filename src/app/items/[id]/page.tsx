@@ -17,7 +17,7 @@ async function fetchItemData(id: string) {
     redirect('/auth/login')
   }
 
-  const response = await fetch(`/api/items/${id}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/${id}`, {
     cache: 'no-store', // Ensure fresh data
   })
 

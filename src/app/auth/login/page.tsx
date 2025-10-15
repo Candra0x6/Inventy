@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, getSession, useSession } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { AnimatedCard } from "@/components/ui/animated-card"
 import { AnimatedButton } from "@/components/ui/animated-button"
 import { fadeInUp, staggerContainer, scaleIn } from "@/lib/animations"
+import { useI18n } from "@/lib/i18n-helpers"
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
+  const { t, auth, common } = useI18n()
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -61,7 +63,7 @@ export default function LoginPage() {
       }
 
       try {
-        const response = await fetch('/api/auth/check-google', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/check-google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email })
@@ -147,7 +149,7 @@ export default function LoginPage() {
         {/* Login Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold border-b border-border/50 pb-2">
-            Login Information
+            {auth.login.title}
           </h3>
 
         <motion.div variants={fadeInUp}>
@@ -156,7 +158,7 @@ export default function LoginPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
               </svg>
-              Email address *
+              {auth.login.emailLabel}
             </label>
           <div className="relative">
             <input
@@ -165,7 +167,7 @@ export default function LoginPage() {
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               className={`w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.email ? 'border-red-500' : 'border-border'}`}
-              placeholder="Enter your email"
+              placeholder={auth.login.emailPlaceholder}
               required
             />
             {/* Email Google Status Indicator */}
@@ -176,14 +178,14 @@ export default function LoginPage() {
                     <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="ml-1 text-xs text-green-600">Google</span>
+                    <span className="ml-1 text-xs text-green-600">{t('auth_login_googleLinked')}</span>
                   </div>
                 ) : emailGoogleStatus.userExists ? (
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    <span className="ml-1 text-xs text-gray-500">No Google</span>
+                    <span className="ml-1 text-xs text-gray-500">{t('auth_login_noGoogle')}</span>
                   </div>
                 ) : null}
               </div>
@@ -201,11 +203,11 @@ export default function LoginPage() {
           {emailGoogleStatus.checked && formData.email && (
             <div className="mt-1">
               {emailGoogleStatus.hasGoogleAccount ? (
-                <p className="text-xs text-green-600">✓ This email is linked to a Google account</p>
+                <p className="text-xs text-green-600">✓ {t('auth_login_email_google_linked')}</p>
               ) : emailGoogleStatus.userExists ? (
-                <p className="text-xs text-gray-500">This email exists but is not linked to Google</p>
+                <p className="text-xs text-gray-500">{t('auth_login_email_exists_no_google')}</p>
               ) : (
-                <p className="text-xs text-gray-500">No account found with this email</p>
+                <p className="text-xs text-gray-500">{t('auth_login_no_account_found')}</p>
               )}
             </div>
           )}
@@ -218,7 +220,7 @@ export default function LoginPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              Password *
+              {auth.login.passwordLabel}
             </label>
             <input
               id="password"
@@ -226,7 +228,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
               className={`w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.password ? 'border-red-500' : 'border-border'}`}
-              placeholder="Enter your password"
+              placeholder={auth.login.passwordPlaceholder}
               required
             />
             {errors.password && (
@@ -249,7 +251,7 @@ export default function LoginPage() {
             className="flex-1 w-full sm:flex-initial"
             size="lg"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? common.loading : auth.login.button}
           </AnimatedButton>
         </div>
 
@@ -260,7 +262,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-border/50" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
+              <span className="px-2 bg-background text-muted-foreground">{t('auth_login_or_continue')}</span>
             </div>
           </div>
 
@@ -282,10 +284,10 @@ export default function LoginPage() {
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
           {emailGoogleStatus.hasGoogleAccount 
-            ? "Continue with Google" 
+            ? t('auth_login_continue_google') 
             : hasGoogleHistory 
-              ? "Continue with Google" 
-              : "Sign in with Google"
+              ? t('auth_login_continue_google')
+              : auth.login.googleButton
           }
           
           {/* Indicators */}
@@ -306,7 +308,7 @@ export default function LoginPage() {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              This email is linked to Google
+              {t('auth_login_email_google_linked')}
             </p>
           )}
           {hasGoogleHistory && !emailGoogleStatus.hasGoogleAccount && (
@@ -314,7 +316,7 @@ export default function LoginPage() {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              Previously used Google sign-in
+              {t('auth_login_previously_used_google')}
             </p>
           )}
         </div>
@@ -323,9 +325,9 @@ export default function LoginPage() {
         <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-border/50">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              {auth.login.noAccount}{" "}
               <Link href="/auth/register" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                Sign up
+                {auth.login.signupLink}
               </Link>
             </p>
           </div>

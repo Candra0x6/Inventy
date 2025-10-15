@@ -40,7 +40,7 @@ export default function MyNotificationsPage() {
   const fetchNotifications = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/user/notifications?limit=50')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/notifications?limit=50`)
       if (response.ok) {
         const data = await response.json()
         setNotifications(data.notifications || [])

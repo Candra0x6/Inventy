@@ -73,7 +73,7 @@ export default function ReturnApprovalWorkflow() {
         }
         params.append('limit', '50')
         
-        const response = await fetch(`/api/returns?${params}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns?${params}`)
         if (response.ok) {
           const data = await response.json()
           setReturns(data.returns || [])
@@ -97,7 +97,7 @@ export default function ReturnApprovalWorkflow() {
       }
       params.append('limit', '50')
       
-      const response = await fetch(`/api/returns?${params}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns?${params}`)
       if (response.ok) {
         const data = await response.json()
         setReturns(data.returns || [])
@@ -111,7 +111,7 @@ export default function ReturnApprovalWorkflow() {
 
   const handleApprove = async (returnId: string) => {
     try {
-      const response = await fetch(`/api/returns/${returnId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/${returnId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export default function ReturnApprovalWorkflow() {
 
   const handleReject = async (returnId: string, reason: string) => {
     try {
-      const response = await fetch(`/api/returns/${returnId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/returns/${returnId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

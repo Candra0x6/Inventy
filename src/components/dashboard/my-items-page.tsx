@@ -57,7 +57,7 @@ export default function MyItemsPage() {
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/user/borrowed-items')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/borrowed-items`)
       if (response.ok) {
         const data = await response.json()
         setBorrowedItems(data.items || [])
@@ -78,7 +78,7 @@ export default function MyItemsPage() {
 
     setExtendDialog(prev => ({ ...prev, loading: true }))
     try {
-      const response = await fetch(`/api/reservations/${extendDialog.item!.reservation.id}/extend`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${extendDialog.item!.reservation.id}/extend`, {
         method: 'POST',
       })
       if (response.ok) {
@@ -100,7 +100,7 @@ export default function MyItemsPage() {
 
     setReturnDialog(prev => ({ ...prev, loading: true }))
     try {
-      const response = await fetch(`/api/reservations/${returnDialog.item!.reservation.id}/return`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${returnDialog.item!.reservation.id}/return`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -142,7 +142,7 @@ export default function MyItemsPage() {
 
     setCancelDialog(prev => ({ ...prev, loading: true }))
     try {
-      const response = await fetch(`/api/reservations/${cancelDialog.item!.reservation.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reservations/${cancelDialog.item!.reservation.id}`, {
         method: 'DELETE',
       })
       if (response.ok) {

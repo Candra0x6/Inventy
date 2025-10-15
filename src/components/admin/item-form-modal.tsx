@@ -136,7 +136,7 @@ export default function ItemFormModal({
   // Fetch available categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`)
       if (response.ok) {
         const data = await response.json()
         setAvailableCategories(data.categories.map((cat: { name: string }) => cat.name))
@@ -267,7 +267,7 @@ export default function ItemFormModal({
         }, 200)
 
         const fileExt = file.name.split('.').pop()
-        const fileName = `original-${Date.now()}-${Math.random()}.${fileExt}`
+        const fileName = `items/${item?.id}/item-${Date.now()}-${Math.random()}.${fileExt}`
         
         const { data, error } = await supabase.storage
           .from('item-images')

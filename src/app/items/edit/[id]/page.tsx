@@ -56,7 +56,7 @@ export default function EditItemPage({ params }: EditItemPageProps) {
     const loadItem = async () => {
       try {
         const resolvedParams = await params
-        const response = await fetch(`/api/items/${resolvedParams.id}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/${resolvedParams.id}`)
        
         
 
@@ -123,7 +123,7 @@ export default function EditItemPage({ params }: EditItemPageProps) {
     setIsLoading(true)
     
     try {
-      const response = await fetch(`/api/items/${item.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/items/${item.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

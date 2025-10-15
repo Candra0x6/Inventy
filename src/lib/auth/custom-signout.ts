@@ -26,7 +26,7 @@ export const customSignOut = async (options?: { callbackUrl?: string }) => {
 
     // Client-side aggressive cookie cleanup
     if (typeof window !== 'undefined') {
-      // Clear all NextAuth cookies multiple times with different configurations
+      // Clear all NextAuth cookies multiple times with different configurations even not expired
       for (let i = 0; i < 3; i++) {
         cookiesToClean.forEach(cookieName => {
           // Clear with various domain and path combinations
@@ -73,7 +73,7 @@ export const customSignOut = async (options?: { callbackUrl?: string }) => {
 
       // Call our custom logout API to ensure server-side cleanup
       try {
-        await fetch('/api/auth/logout', {
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
           method: 'POST',
           credentials: 'include',
         })
@@ -83,7 +83,7 @@ export const customSignOut = async (options?: { callbackUrl?: string }) => {
 
       // Also call NextAuth's signout endpoint directly to ensure proper cleanup
       try {
-        await fetch('/api/auth/signout', {
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/signout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
