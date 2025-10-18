@@ -94,6 +94,7 @@ export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) 
 
           {/* Actions */}
           <div className="flex items-center space-x-2">
+            <LanguageSwitcher />
             <ThemeToggle />
             
             {/* Mobile menu button */}

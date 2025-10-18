@@ -229,11 +229,7 @@ export default function Home() {
       {/* Footer */}
       <Footer />
 
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        icon={<Bell className="w-6 h-6" />}
-        position="bottom-right"
-      />
+
     </div>
   )
 }
