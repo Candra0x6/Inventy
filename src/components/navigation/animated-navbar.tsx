@@ -55,19 +55,20 @@ export function AnimatedNavbar({ items, logo, className }: AnimatedNavbarProps) 
             transition={{ duration: 0.2 }}
           >
             {logo || (
-              theme === 'dark' || theme === 'system' ?
+              theme === 'light' ?
+              <Image
+                src="/fosti-black.png"
+                alt="Inventy Logo"
+                width={80}
+                height={80}
+              />  :
               <Image
                 src="/fosti.png"
                 alt="Inventy Logo"
                 width={80}
                 height={80}
               />  
-              : <Image
-                src="/fosti-black.png"
-                alt="Inventy Logo"
-                width={80}
-                height={80}
-              />  
+              
             )}
           </motion.div>
 

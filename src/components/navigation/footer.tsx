@@ -79,19 +79,20 @@ export function Footer() {
               viewport={{ once: true }}
             >
               <div className="flex items-center space-x-3">
-               { theme === 'dark' || theme == 'system' ?
+               { theme === 'light' ?
+               <Image
+                              src="/fosti-black.png"
+                              alt="Inventy Logo"
+                              width={80}
+                              height={80}
+                            /> :
                             <Image
                               src="/fosti.png"
                               alt="Inventy Logo"
                               width={80}
                               height={80}
                             />  
-                            : <Image
-                              src="/fosti-black.png"
-                              alt="Inventy Logo"
-                              width={80}
-                              height={80}
-                            />  }
+                              }
                 <div>
                   <h3 className="text-lg font-bold">Inventy</h3>
                   <p className="text-sm text-muted-foreground">by FOSTI</p>
