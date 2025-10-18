@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
-        role: "SUPER_ADMIN", // Default role
+        role: "BORROWER", // Default role
       },
       select: {
         id: true,
