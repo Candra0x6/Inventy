@@ -122,8 +122,8 @@ export default function ItemFormModal({
           condition: 'EXCELLENT',
           status: 'AVAILABLE',
           location: '',
-          serialNumber: '',
-          value: null,
+          serialNumber: '1',
+          value: 1,
           images: []
         })
       }
@@ -162,14 +162,6 @@ export default function ItemFormModal({
 
     if (formData.description && formData.description.length > 500) {
       newErrors.description = 'Description must be less than 500 characters'
-    }
-
-    if (formData.value !== null && formData.value < 0) {
-      newErrors.value = 'Value must be a positive number'
-    }
-
-    if (formData.serialNumber && formData.serialNumber.length > 50) {
-      newErrors.serialNumber = 'Serial number must be less than 50 characters'
     }
 
     if (formData.location && formData.location.length > 100) {
@@ -519,7 +511,7 @@ export default function ItemFormModal({
               Additional Details
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="">
               {/* Location */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -541,49 +533,6 @@ export default function ItemFormModal({
                 )}
               </div>
 
-              {/* Serial Number */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Serial Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.serialNumber}
-                  onChange={(e) => handleInputChange('serialNumber', e.target.value)}
-                  placeholder="Enter serial number"
-                  className={`w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.serialNumber ? 'border-red-500' : 'border-border'}`}
-                />
-                {errors.serialNumber && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="h-4 w-4" />
-                    {errors.serialNumber}
-                  </p>
-                )}
-              </div>
-
-              {/* Value */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Value (USD)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.value || ''}
-                  onChange={(e) => handleInputChange('value', e.target.value ? parseFloat(e.target.value) : null)}
-                  placeholder="0.00"
-                  className={`w-full px-3 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.value ? 'border-red-500' : 'border-border'}`}
-                />
-                {errors.value && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="h-4 w-4" />
-                    {errors.value}
-                  </p>
-                )}
-              </div>
             </div>
           </div>
 
