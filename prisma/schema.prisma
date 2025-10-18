@@ -165,7 +165,7 @@ model Item {
   condition      ItemCondition @default(EXCELLENT)
   status         ItemStatus    @default(AVAILABLE)
   location       String?
-  serialNumber   String?       @unique @map("serial_number")
+  serialNumber   String?       @map("serial_number")
   qrCode         String?       @unique @map("qr_code")
   barcode        String?       @unique
   images         String[]      // Array of image URLs
